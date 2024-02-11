@@ -30,7 +30,7 @@ Preferable Python version : 3.11.8
 <br/>
 
 # Guidelines to follow
--  Always activate virtual environment bwfore working on the project
+-  Always activate virtual environment before working on the project
 
 - Don't update any package inside virtual environment
 
