@@ -36,7 +36,7 @@ Preferable Python version : 3.11.8
 
 - Each time you install or uninstall a package inside virtual environment, update the requirements.txt file
 
-    `pip freeze > requirements-freeze.txt`
+    `pip freeze > requirements.txt`
 
 - Reinstall the requirements if you encounter package missing issues
 
