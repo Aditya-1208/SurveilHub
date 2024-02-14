@@ -41,7 +41,7 @@ Preferable Python version : 3.11.8
     ```
     CREATE USER 'YOUR_USERNAME'@'%' IDENTIFIED BY 'YOUR_PASSWORD';
 
-    GRANT SELECT, INSERT, UPDATE, DELETE ON surveilhub_dev.* TO 'YOUR_USERNAME'@'%';
+    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE ON surveilhub_dev.* TO 'YOUR_USERNAME'@'%';
 
     FLUSH PRIVILEGES;
     ```
