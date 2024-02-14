@@ -66,6 +66,21 @@ Preferable Python version : 3.11.8
     - Here replace YOUR_USERNAME and YOUR_PASSWORD with your previously created username and password
     - Incase you did not create a new user, use `root` as `username` and the corresponding password as `password`
 
+## Test the Database setup
+
+- Run the flask shell from CLI
+
+    `Flask shell`
+
+- Print the db instance
+
+    ```
+    from app.extensions import db
+    print(db)
+    ```
+
+    - You should see a SQLAlchemy instance with your db connection URI, which confirms that the database connection is setup correctly!
+
 <br/>
 
 # Guidelines to follow
