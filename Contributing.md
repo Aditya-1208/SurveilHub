@@ -27,6 +27,45 @@ Preferable Python version : 3.11.8
 
     `pip install -r requirements.txt`
 
+## Database setup
+- Install the MYSQL database community edition if not installed already
+
+- Connect as root using workbench or mysql shell
+
+- Create a new database for our application
+
+    `CREATE DATABASE surveilhub_dev;`
+
+- Create a new user with limited access scope (optional)
+
+    ```
+    CREATE USER 'YOUR_USERNAME'@'%' IDENTIFIED BY 'YOUR_PASSWORD';
+
+    GRANT SELECT, INSERT, UPDATE, DELETE ON surveilhub_dev.* TO 'YOUR_USERNAME'@'%';
+
+    FLUSH PRIVILEGES;
+    ```
+    - Here replace YOUR_USERNAME and YOUR_PASSWORD with your desired username and password
+
+
+- Create a new file at root level `.env`
+
+- Populate the file with the following content
+
+    ```
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=YOUR_USERNAME
+    DB_PASSWORD=YOUR_PASSWORD
+    DB_NAME=surveilhub_dev
+
+    FLASK_APP=app
+    FLASK_ENV=development
+    ```
+
+    - Here replace YOUR_USERNAME and YOUR_PASSWORD with your previously created username and password
+    - Incase you did not create a new user, use `root` as `username` and the corresponding password as `password`
+
 <br/>
 
 # Guidelines to follow
@@ -48,8 +87,8 @@ Preferable Python version : 3.11.8
 
 - Running the flask server
 
-    `flask --app app run`
+    `flask run`
 
 - Running the server with debug mode
 
-    `flask --app app run --debug`
+    `flask run --debug`
