@@ -121,10 +121,15 @@ Preferable Python version : 3.11.8
 
 - All changes to database must be through migrations only!
     - To create migrations for changes made, run
+
         `flask db migrate -m "YOUR_MESSAGE"`
     - To apply the migrations
+
         `flask db upgrade`
     - To reverse last migration
+
         `flask db downgrade`
 
-- If you create a new model, import it into application factory file to enable the Flask-Migrate to detect the new model
+- If you create a new model, import it into application factory file to enable the Flask-Migrate to detect the new model/
+
+- In some cases, Flask-Migrate may not be able to detect changes, in such cases, create migration files yourself and add/edit the contents to enforce requried changes!
