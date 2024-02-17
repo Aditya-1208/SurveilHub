@@ -81,6 +81,15 @@ Preferable Python version : 3.11.8
 
     - You should see a SQLAlchemy instance with your db connection URI, which confirms that the database connection is setup correctly!
 
+## Run migrations
+
+- Run command to migrate existing migrations
+
+    ```
+    flask db upgrade
+    ```
+
+
 <br/>
 
 # Guidelines to follow
@@ -107,3 +116,15 @@ Preferable Python version : 3.11.8
 - Running the server with debug mode
 
     `flask run --debug`
+
+# Changes to the database
+
+- All changes to database must be through migrations only!
+    - To create migrations for changes made, run
+        `flask db migrate -m "YOUR_MESSAGE"`
+    - To apply the migrations
+        `flask db upgrade`
+    - To reverse last migration
+        `flask db downgrade`
+
+- If you create a new model, import it into application factory file to enable the Flask-Migrate to detect the new model
