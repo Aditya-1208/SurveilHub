@@ -66,16 +66,11 @@ def video_stream_gen():
 
 
             image = frame[35:89, 1431:1855]
-            retval, image = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
-            image = cv2.resize(image, (0, 0), fx=3, fy=3)
-            image = cv2.GaussianBlur(image, (11, 11), 0)
-            image = cv2.medianBlur(image, 9)
-
-            # Convert the NumPy array to a PIL Image object
-            pil_image = Image.fromarray(image)
-
-            # Perform OCR on the PIL Image object
-            text = pytesseract.image_to_string(pil_image, lang='eng', config='--psm 7')
+            retval, img = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
+            img = cv2.GaussianBlur(img, (11, 11), 0)
+            img = cv2.medianBlur(img, 9)
+            pil_image = Image.fromarray(img)
+            text = pytesseract.image_to_string(pil_image, config=r'--psm 7 --oem 3 -l eng -c tessedit_char_whitelist=0123456789')
             print(text)
 
 
