@@ -9,6 +9,7 @@ import pytesseract
 import queue
 from ultralytics import YOLO
 from helper import *
+from PIL import Image
 
 app = Flask(__name__)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
@@ -64,19 +65,18 @@ def video_stream_gen():
             video_writer.write(frame)
 
 
-            roi = frame[30:80, 1350:1800]  # Adjust ROI coordinates if needed
-            gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            blur = cv2.GaussianBlur(gray, (5, 5), 0)
-            _, thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-            kernel = np.ones((1, 1), np.uint8)
-            img_dilation = cv2.dilate(thresh, kernel, iterations=1)
-            img_erosion = cv2.erode(img_dilation, kernel, iterations=1)
-            text = pytesseract.image_to_string(img_erosion)
-            # Extract timestamp and handle potential None type
-            match = re.search(r'\d{2}:\d{2}:\d{2}', text)
-            time_str = match.group() if match else None  # Use a default value if no match
+            image = frame[35:89, 1431:1855]
+            retval, image = cv2.threshold(image, 200, 255, cv2.THRESH_BINARY)
+            image = cv2.resize(image, (0, 0), fx=3, fy=3)
+            image = cv2.GaussianBlur(image, (11, 11), 0)
+            image = cv2.medianBlur(image, 9)
 
-            print("Timestamp :", time_str)
+            # Convert the NumPy array to a PIL Image object
+            pil_image = Image.fromarray(image)
+
+            # Perform OCR on the PIL Image object
+            text = pytesseract.image_to_string(pil_image, lang='eng', config='--psm 7')
+            print(text)
 
 
             _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
@@ -100,3 +100,5 @@ def video():
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+
