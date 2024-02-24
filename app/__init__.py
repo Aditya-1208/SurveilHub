@@ -27,7 +27,7 @@ def create_app(config_class=Config):
     def get_cameras():
         cameras = Camera.query.all()
         cameras_data = [{'id': camera.id, 'name': camera.name, 'connection_url': camera.connection_url} for camera in cameras]
-        return render_template('main_dashboard.html')
+        return render_template('main_dashboard.html',cameras=cameras_data)
 
     # Route to create a new camera
     @app.route('/cameras', methods=['GET','POST'])
@@ -38,7 +38,7 @@ def create_app(config_class=Config):
             new_camera = Camera(name=name, connection_url=connection_url)
             db.session.add(new_camera)
             db.session.commit()
-            return redirect(url_for('main_dashboard'))
+            return redirect(url_for('get_cameras'))
         return render_template('create_camera.html')
     
     @app.route('/create-camera', methods=['GET'])
@@ -56,8 +56,16 @@ def create_app(config_class=Config):
         db.session.commit()
         
         # Redirect the user back to the main dashboard page
-        return redirect(url_for('main_dashboard'))
+        return redirect(url_for('get_cameras'))
 
+    @app.route('/camera/<int:camera_id>')
+    def view_camera(camera_id):
+        # Fetch the camera from the database using the camera_id
+        camera = Camera.query.get_or_404(camera_id)
+        
+        # Now, render the index.html page with the camera's details
+        # You might need to adjust this depending on how index.html uses the camera's details
+        return render_template('index.html', camera=camera)
 
     @app.route('/index')
     def index():

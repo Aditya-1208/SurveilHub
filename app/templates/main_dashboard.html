@@ -9,25 +9,15 @@
             <h2 class="d-inline-block">All Cameras</h2>
             <ul>
                 {% for camera in cameras %}
-                    <li><a href="/camera/{{ camera.id }}">{{ camera.name }} - ID: {{ camera.id }}</a></li>
+                    <li><a href="{{ url_for('view_camera', camera_id=camera.id) }}">{{ camera.name }} - ID: {{ camera.id }}</a></li>
                 {% endfor %}
-                <!-- Manually entered cameras -->
-                <li><a href="#">Camera 1 - ID: 1</a></li>
-                <li><a href="#">Camera 2 - ID: 2</a></li>
-                <li><a href="#">Camera 3 - ID: 3</a></li>
-                <li><a href="#">Camera 4 - ID: 4</a></li>
-                <li><a href="#">Camera 5 - ID: 5</a></li>
-                <li><a href="#">Camera 6 - ID: 6</a></li>
-                <li><a href="#">Camera 7 - ID: 7</a></li>
-                <li><a href="#">Camera 8 - ID: 8</a></li>
-                <li><a href="#">Camera 9 - ID: 9</a></li>
-                <li><a href="#">Camera 10 - ID: 10</a></li>
+
             </ul>
         </div>
         
         <!-- Create Camera Button -->
         <div class="col-md-6 text-end"> <!-- Adjust column width as needed -->
-            <a href="{{ url_for('create_camera') }}" class="btn btn-primary">Create Camera</a>
+            <a href="{{ url_for('create_camera_page') }}" class="btn btn-primary">Create Camera</a>
         </div>
     </div>
 {% endblock %}
