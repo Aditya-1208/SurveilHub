@@ -3,21 +3,21 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <div class="row">
-        <!-- List of cameras -->
-        <div class="col-md-6">
-            <h2 class="d-inline-block">All Cameras</h2>
-            <ul>
-                {% for camera in cameras %}
-                    <li><a href="{{ url_for('view_camera', camera_id=camera.id) }}">{{ camera.name }} - ID: {{ camera.id }}</a></li>
-                {% endfor %}
+<div class="row">
+    <!-- List of cameras -->
+    <div class="col-md-6">
+        <h2 class="d-inline-block">All Cameras</h2>
+        <ul>
+            {% for camera in cameras %}
+            <li><a href="{{ url_for('view_camera', camera_id=camera.id) }}">{{ camera.name }}</a></li>
+            {% endfor %}
 
-            </ul>
-        </div>
-        
-        <!-- Create Camera Button -->
-        <div class="col-md-6 text-end"> <!-- Adjust column width as needed -->
-            <a href="{{ url_for('create_camera_page') }}" class="btn btn-primary">Create Camera</a>
-        </div>
+        </ul>
     </div>
+
+    <!-- Create Camera Button -->
+    <div class="col-md-6 text-end"> <!-- Adjust column width as needed -->
+        <a href="{{ url_for('create_camera_page') }}" class="btn btn-primary">Create Camera</a>
+    </div>
+</div>
 {% endblock %}
