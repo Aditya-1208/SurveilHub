@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="#" class="list-group-item list-group-item-action">Object Detection</a>
+                <a href="#" class="list-group-item list-group-item-action">Behavior Patterns</a>
+                <a href="#" class="list-group-item list-group-item-action">Unusual Activity Detection</a>
+                <a href="#" class="list-group-item list-group-item-action">Traffic Insights</a>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="col-md-9">
+            <!-- Object Detection Table -->
+            <h3 class="mb-3">Object Detection</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Timestamp</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Additional Info</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2024-02-14 10:00:00</td>
+                        <td>Person</td>
+                        <td>Location: Lobby</td>
+                    </tr>
+                    <tr>
+                        <td>2024-02-14 10:05:00</td>
+                        <td>Vehicle</td>
+                        <td>License Plate: ABC123</td>
+                    </tr>
+                    <!-- Add more rows as needed -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
