@@ -14,17 +14,8 @@ def create_app(config_class=Config):
     db.init_app(app)
     migrate = Migrate(app, db)
 
-    @app.route('/test/')
-    def test_page():
-        return '<h1>Testing the Flask Application Factory Pattern</h1>'
-
     @app.route('/')
     def home():
-        return 'Hello World!</h1>'
-
-    # Route to retrieve all cameras
-    @app.route('/cameras', methods=['GET'])
-    def get_cameras():
         cameras = Camera.query.all()
         cameras_data = [{'id': camera.id, 'name': camera.name, 'connection_url': camera.connection_url} for camera in cameras]
         return render_template('main_dashboard.html',cameras=cameras_data)
