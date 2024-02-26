@@ -29,7 +29,7 @@ def create_app(config_class=Config):
             new_camera = Camera(name=name, connection_url=connection_url)
             db.session.add(new_camera)
             db.session.commit()
-            return redirect(url_for('get_cameras'))
+            return redirect(url_for('home'))
         return render_template('create_camera.html')
     
     @app.route('/create-camera', methods=['GET'])
