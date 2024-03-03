@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Draw Line on Canvas</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+    canvas {
+      border: 1px solid #ddd;
+      cursor: crosshair; /* Change cursor to crosshair for drawing */
+    }
+  </style>
+</head>
+<body>
+  <canvas id="myCanvas" width="600" height="400"></canvas>
+  <script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let isDrawing = false;
+    let startX, startY;
+
+    canvas.addEventListener('mousedown', (event) => {
+      isDrawing = true;
+      startX = event.offsetX;
+      startY = event.offsetY;
+    });
+
+    canvas.addEventListener('mousemove', (event) => {
+      if (isDrawing) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(event.offsetX, event.offsetY);
+        ctx.stroke();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+      console.log(`Start point: (${startX}, ${startY})`);
+
+      $.ajax({
+        url: '/save_coordinates', // Adjust URL to match your Flask route
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          startX: startX,
+          startY: startY,
+          endX: event.offsetX, // Use event.offsetX for accurate ending x-coordinate
+          endY: event.offsetY, // Use event.offsetY for accurate ending y-coordinate
+        }),
+        success: function(response) {
+          console.log(response); // Handle response from Flask server
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+          console.error("Error sending data:", textStatus, errorThrown);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

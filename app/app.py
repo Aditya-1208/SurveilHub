@@ -1,6 +1,5 @@
 import cv2
 import imutils
-from flask import Flask, render_template, Response
 import numpy as np
 import time
 import threading
@@ -10,17 +9,43 @@ import queue
 from ultralytics import YOLO
 from helper import *
 from PIL import Image
-
-app = Flask(__name__)
+from flask import Flask, request, jsonify, render_template, Response
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
-# Set video file path (replace with your actual path)
 VIDEO_PATH = "http://localhost:8080"
 
-# Frame processing and display thread settings
+app = Flask(__name__)
+
+
 FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 10
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/video')
+def video():
+    return Response(video_stream_gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/draw_line')
+def draw_line():
+  return render_template('sampleImage.html')
+
+@app.route('/save_coordinates', methods=['POST'])
+def save_coordinates():
+  # Access data from the POST request
+  data = request.get_json()  # Alternatively, you could use request.form
+  start_x = data.get('startX')
+  start_y = data.get('startY')
+  end_x = data.get('endX')
+  end_y = data.get('endY')
+
+  # Process the coordinates as needed (e.g., store in database, log to file, etc.)
+  print('Start coordinates:', start_x, start_y)
+  print('End coordinates:', end_x, end_y)
+
+  return jsonify({'message': 'Coordinates received successfully'}), 201  # HTTP status code for created resource
 
 
 def video_stream_gen():
@@ -85,15 +110,6 @@ def video_stream_gen():
     finally:
         vid.release()
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/video')
-def video():
-    return Response(video_stream_gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
+  app.run(debug=True)
