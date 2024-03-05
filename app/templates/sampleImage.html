@@ -1,68 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Draw Line on Canvas</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Draw Line on Image</title>
+<style>
     body {
-      margin: 0;
-      padding: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
     }
     canvas {
-      border: 1px solid #ddd;
-      cursor: crosshair; /* Change cursor to crosshair for drawing */
+        position: absolute;
+        top: 0;
+        left: 0;
     }
-  </style>
+</style>
 </head>
 <body>
-  <canvas id="myCanvas" width="600" height="400"></canvas>
-  <script>
-    const canvas = document.getElementById('myCanvas');
-    const ctx = canvas.getContext('2d');
+    <img id="image" src="{{ url_for('display_image', filename=file_name) }}" alt="Image">
+    <canvas id="canvas"></canvas>
+    <script>
+        window.onload = function() {
+            var canvas = document.getElementById('canvas');
+            var ctx = canvas.getContext('2d');
+            var image = document.getElementById('image');
 
-    let isDrawing = false;
-    let startX, startY;
+            canvas.width = image.width;
+            canvas.height = image.height;
 
-    canvas.addEventListener('mousedown', (event) => {
-      isDrawing = true;
-      startX = event.offsetX;
-      startY = event.offsetY;
-    });
+            ctx.drawImage(image, 0, 0);
 
-    canvas.addEventListener('mousemove', (event) => {
-      if (isDrawing) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.beginPath();
-        ctx.moveTo(startX, startY);
-        ctx.lineTo(event.offsetX, event.offsetY);
-        ctx.stroke();
-      }
-    });
+            var startX, startY, endX, endY;
 
-    canvas.addEventListener('mouseup', () => {
-      isDrawing = false;
-      console.log(`Start point: (${startX}, ${startY})`);
+            canvas.addEventListener('mousedown', function(e) {
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+            });
 
-      $.ajax({
-        url: '/save_coordinates', // Adjust URL to match your Flask route
-        type: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          startX: startX,
-          startY: startY,
-          endX: event.offsetX, // Use event.offsetX for accurate ending x-coordinate
-          endY: event.offsetY, // Use event.offsetY for accurate ending y-coordinate
-        }),
-        success: function(response) {
-          console.log(response); // Handle response from Flask server
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-          console.error("Error sending data:", textStatus, errorThrown);
-        }
-      });
-    });
-  </script>
+            canvas.addEventListener('mouseup', function(e) {
+                endX = e.clientX - canvas.offsetLeft;
+                endY = e.clientY - canvas.offsetTop;
+
+                // Send all coordinates to Flask server
+                fetch('/save_coordinates', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        startX: startX,
+                        startY: startY,
+                        endX: endX,
+                        endY: endY
+                    })
+                });
+            });
+
+            canvas.addEventListener('mousedown', function(e) {
+                startX = e.clientX - canvas.offsetLeft;
+                startY = e.clientY - canvas.offsetTop;
+
+                canvas.addEventListener('mouseup', function drawLine(e) {
+                    endX = e.clientX - canvas.offsetLeft;
+                    endY = e.clientY - canvas.offsetTop;
+
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.strokeStyle = 'red';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+
+                    // Send all coordinates to Flask server
+                    fetch('/save_coordinates', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            startX: startX,
+                            startY: startY,
+                            endX: endX,
+                            endY: endY
+                        })
+                    });
+
+                    canvas.removeEventListener('mouseup', drawLine);
+                });
+            });
+        };
+    </script>
 </body>
 </html>
