@@ -7,13 +7,17 @@ import threading
 import re
 import pytesseract
 import queue
-from ultralytics import YOLO
-from helper import *
+from utils.predictive_models.yolo_model.yolo_model import YOLOModel
+from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from PIL import Image
 from flask import Flask, request, jsonify, render_template, Response, send_from_directory, redirect, url_for
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 VIDEO_PATH = "http://localhost:8080"
 
+# Frame processing and display thread settings
+FRAME_WIDTH = 400
+FRAME_QUEUE_SIZE = 10
+frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
 app = Flask(__name__)
 
 
@@ -59,6 +63,10 @@ def save_coordinates():
 
   return jsonify({'message': 'Coordinates received successfully'}), 201  # HTTP status code for created resource
 
+@app.route('/video')
+def video():
+    return Response(video_stream_gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 def video_stream_gen():
     vid = cv2.VideoCapture(VIDEO_PATH)
@@ -67,11 +75,6 @@ def video_stream_gen():
 
     ml_model = YOLOModel
     counter = CounterApplication(ml_model)
-    # w, h, fps = (int(vid.get(x)) for x in (cv2.CAP_PROP_FRAME_WIDTH, cv2.CAP_PROP_FRAME_HEIGHT, cv2.CAP_PROP_FPS))
-    # video_writer = cv2.VideoWriter("counting_output.mp4",
-    #                         cv2.VideoWriter_fourcc(*'mp4v'),
-    #                     fps,
-    #                     (w, h))
 
 
     try:
