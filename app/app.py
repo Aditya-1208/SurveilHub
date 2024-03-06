@@ -73,7 +73,7 @@ def video_stream_gen():
     if not vid.isOpened():
         raise RuntimeError("Error opening video file")
 
-    ml_model = YOLOModel
+    ml_model = YOLOModel()
     counter = CounterApplication(ml_model)
 
 
@@ -82,7 +82,7 @@ def video_stream_gen():
             while True:
                 ret, frame = vid.read()
                 if not ret:
-                    break
+                    continue
 
                 try:
                     frame_queue.put(frame, block=False)
@@ -95,8 +95,8 @@ def video_stream_gen():
         while True:
             frame = frame_queue.get()
             frame = counter.count(frame)
-            video_writer.write(frame)
-
+            # video_writer.write(frame)
+            print(frame)
 
             image = frame[35:89, 1431:1855]
             retval, img = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
