@@ -11,7 +11,7 @@ from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from PIL import Image
 from flask import Flask, request, jsonify, render_template, Response, send_from_directory, redirect, url_for
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 VIDEO_PATH = "http://localhost:8080"
 
 # Frame processing and display thread settings
@@ -96,7 +96,6 @@ def video_stream_gen():
             frame = frame_queue.get()
             frame = counter.count(frame)
             # video_writer.write(frame)
-            print(frame)
 
             image = frame[35:89, 1431:1855]
             retval, img = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)

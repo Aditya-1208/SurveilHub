@@ -7,8 +7,8 @@ class YOLOModel(BaseModel):
         super().__init__(model_path)
         self.model = YOLO(model_path)
 
-    def names():
-        return model.names
+    def names(self):
+        return self.model.names
 
     def track(self, frame, persist=True, show=False, classes=None):
         return self.model.track(frame, persist=persist, show=show, classes=classes)
