@@ -18,6 +18,7 @@ VIDEO_PATH = "http://localhost:8080"
 FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 10
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
+line_points=[]
 app = Flask(__name__)
 
 
@@ -50,18 +51,11 @@ def display_image(filename):
 
 @app.route('/save_coordinates', methods=['POST'])
 def save_coordinates():
-  # Access data from the POST request
-  data = request.get_json()  # Alternatively, you could use request.form
-  start_x = data.get('startX')
-  start_y = data.get('startY')
-  end_x = data.get('endX')
-  end_y = data.get('endY')
-
-  # Process the coordinates as needed (e.g., store in database, log to file, etc.)
-  print('Start coordinates:', start_x, start_y)
-  print('End coordinates:', end_x, end_y)
-
-  return jsonify({'message': 'Coordinates received successfully'}), 201  # HTTP status code for created resource
+    data = request.get_json()
+    print('Received coordinates:', data)
+    line_points = [(point['x'], point['y']) for point in data]
+    print(line_points)
+    return jsonify({'message': 'Coordinates received successfully'}), 201
 
 @app.route('/video')
 def video():
@@ -74,7 +68,7 @@ def video_stream_gen():
         raise RuntimeError("Error opening video file")
 
     ml_model = YOLOModel()
-    counter = CounterApplication(ml_model)
+    counter = CounterApplication(ml_model, line_points)
 
 
     try:

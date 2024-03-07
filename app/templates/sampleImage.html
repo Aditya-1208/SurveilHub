@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Draw Line on Image</title>
+<title>Draw Quadrilateral on Image</title>
 <style>
     body {
         margin: 0;
@@ -31,63 +31,45 @@
 
             ctx.drawImage(image, 0, 0);
 
-            var startX, startY, endX, endY;
+            var points = [];
 
             canvas.addEventListener('mousedown', function(e) {
-                startX = e.clientX - canvas.offsetLeft;
-                startY = e.clientY - canvas.offsetTop;
-            });
+                if (points.length < 4) {
+                    var x = e.clientX - canvas.offsetLeft;
+                    var y = e.clientY - canvas.offsetTop;
 
-            canvas.addEventListener('mouseup', function(e) {
-                endX = e.clientX - canvas.offsetLeft;
-                endY = e.clientY - canvas.offsetTop;
+                    points.push({x: x, y: y});
 
-                // Send all coordinates to Flask server
-                fetch('/save_coordinates', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        startX: startX,
-                        startY: startY,
-                        endX: endX,
-                        endY: endY
-                    })
-                });
-            });
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(image, 0, 0);
 
-            canvas.addEventListener('mousedown', function(e) {
-                startX = e.clientX - canvas.offsetLeft;
-                startY = e.clientY - canvas.offsetTop;
+                    if (points.length > 1) {
+                        ctx.beginPath();
+                        ctx.moveTo(points[0].x, points[0].y);
 
-                canvas.addEventListener('mouseup', function drawLine(e) {
-                    endX = e.clientX - canvas.offsetLeft;
-                    endY = e.clientY - canvas.offsetTop;
+                        for (var i = 1; i < points.length; i++) {
+                            ctx.lineTo(points[i].x, points[i].y);
+                        }
 
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.strokeStyle = 'red';
-                    ctx.lineWidth = 3;
-                    ctx.stroke();
+                        ctx.closePath();
+                        ctx.strokeStyle = 'red';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                    }
+                }
 
-                    // Send all coordinates to Flask server
+                // Send all coordinates to Flask server when quadrilateral is completed
+                if (points.length === 4) {
                     fetch('/save_coordinates', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify({
-                            startX: startX,
-                            startY: startY,
-                            endX: endX,
-                            endY: endY
-                        })
+                        body: JSON.stringify(points)
                     });
 
-                    canvas.removeEventListener('mouseup', drawLine);
-                });
+                    points = [];
+                }
             });
         };
     </script>
