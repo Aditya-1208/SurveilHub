@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Create new camera{% endblock %}
+
+
+{% block content %}
+
+<h1>Create new camera</h1>
+<form method="post" action="{{ url_for('create_camera') }}">
+    <div class="mb-3">
+        <label for="name" class="form-label">Name:</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="connection_url" class="form-label">Connection URL:</label>
+        <input type="text" id="connection_url" name="connection_url" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Create Camera</button>
+</form>
+
+{% endblock %}
