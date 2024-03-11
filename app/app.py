@@ -26,7 +26,7 @@ app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\Sur
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('inference_output.html')
 
 
 @app.route('/draw_line/<file_name>')
