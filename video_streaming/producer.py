@@ -1,7 +1,6 @@
 import os
-import sys
-import time
 import cv2
+import argparse
 from dotenv import load_dotenv
 from kafka import KafkaProducer
 
@@ -47,6 +46,12 @@ if __name__ == '__main__':
     Producer will publish to Kafka Server a video file given as a system arg. 
     Otherwise it will default by streaming webcam feed.
     """
-    
-    video_path = r"C:\Users\Prasanna P M\EC498_Major_Project\SurveilHub\video_streaming\clip.mp4"
+
+    parser = argparse.ArgumentParser(description='Publish video to Kafka topic')
+    parser.add_argument('--video_path', type=str, help='Path to video file')
+
+    args = parser.parse_args()
+
+    video_path = args.video_path 
     publish_video(video_path)
+
