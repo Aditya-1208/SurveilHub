@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request, redirect, url_for, f
 from flask_mail import Mail, Message  
 from dotenv import load_dotenv
 load_dotenv('.env')
+import os
 from config import Config
 from flask_migrate import Migrate
 from app.extensions import db
@@ -13,12 +14,12 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
     # Configure Flask-Mail with your email server details
-    app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
-    app.config['MAIL_PORT'] = 2525
-    app.config['MAIL_USERNAME'] = '1ac9810ea01088'
-    app.config['MAIL_PASSWORD'] = '13d394675d04bf'
-    app.config['MAIL_USE_TLS'] = True
-    app.config['MAIL_USE_SSL'] = False
+    app.config['MAIL_SERVER']= 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
     mail = Mail(app)
 
     # Initialize Flask-Mail extension
@@ -89,7 +90,7 @@ def create_app(config_class=Config):
         #         return "Email sent successfully!"
         #     except Exception as e:
         #         return f"Error sending email: {str(e)}"
-        msg = Message(subject='Hello from the other side!', sender='darshkp2002@gmail.com', recipients=['darshkp482@gmail.com'])
+        msg = Message(subject='Hello from the other side!', sender=os.getenv('MAIL_USERNAME'), recipients=['aditya.agr.btp@gmail.com'])
         msg.body = "Hey Paul, sending you this email from my Flask app, lmk if it works"
         mail.send(msg)
         return "Message sent!"
