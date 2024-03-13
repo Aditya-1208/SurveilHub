@@ -1,4 +1,8 @@
 import sys
+import cv2
+import PIL as Image
+import pytesseract
+
 sys.path.append("..")
 
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
@@ -23,7 +27,7 @@ def inference(frame):
 def consume_kafka_stream():
     # Set your Kafka broker address
     bootstrap_servers = 'localhost:9092'
-    topic = 'video-frame'
+    topic = 'videostreaming'
 
     consumer = KafkaConsumer(topic,
                              bootstrap_servers=bootstrap_servers,
