@@ -1,4 +1,5 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for
+from flask import Flask, render_template, jsonify, request, redirect, url_for, flash
+from flask_mail import Mail, Message  
 from dotenv import load_dotenv
 load_dotenv('.env')
 from config import Config
@@ -10,6 +11,18 @@ from app.models.object_detection import ObjectDetection
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
+
+    # Configure Flask-Mail with your email server details
+    app.config['MAIL_SERVER']='sandbox.smtp.mailtrap.io'
+    app.config['MAIL_PORT'] = 2525
+    app.config['MAIL_USERNAME'] = '1ac9810ea01088'
+    app.config['MAIL_PASSWORD'] = '13d394675d04bf'
+    app.config['MAIL_USE_TLS'] = True
+    app.config['MAIL_USE_SSL'] = False
+    mail = Mail(app)
+
+    # Initialize Flask-Mail extension
+    mail = Mail(app)
 
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -58,6 +71,29 @@ def create_app(config_class=Config):
         # You might need to adjust this depending on how index.html uses the camera's details
         return render_template('index.html', camera=camera)
 
+    @app.route('/send-email', methods=['GET','POST'])
+    def send_email():
+        # if request.method == 'POST':
+        #     # Get user input from the form
+        #     subject = request.form['subject']
+        #     recipient = request.form['recipient']
+        #     message_body = request.form['message_body']
+
+        #     # Create a Flask-Mail Message object
+        #     msg = Message(subject, sender='your_email@example.com', recipients=[recipient])
+        #     msg.body = message_body
+
+        #     try:
+        #         # Send the email
+        #         mail.send(msg)
+        #         return "Email sent successfully!"
+        #     except Exception as e:
+        #         return f"Error sending email: {str(e)}"
+        msg = Message(subject='Hello from the other side!', sender='darshkp2002@gmail.com', recipients=['darshkp482@gmail.com'])
+        msg.body = "Hey Paul, sending you this email from my Flask app, lmk if it works"
+        mail.send(msg)
+        return "Message sent!"
+
     @app.route('/index')
     def index():
         return render_template('index.html')
@@ -65,4 +101,4 @@ def create_app(config_class=Config):
     return app
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
