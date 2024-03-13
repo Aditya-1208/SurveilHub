@@ -6,6 +6,11 @@ from flask_migrate import Migrate
 from app.extensions import db
 from app.models.camera import Camera
 from app.models.object_detection import ObjectDetection
+import subprocess
+import os
+
+camera_processes = {}
+
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -36,6 +41,17 @@ def create_app(config_class=Config):
     def create_camera_page():
         return render_template('create_camera.html')
     
+    def start_streaming(url):
+    # Path to Python executable in the virtual environment
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
+        python_exe = os.path.join(venv_path, 'python.exe')
+        producer_path = os.path.join(current_dir, 'producer.py')
+
+        # Start streaming subprocess for the given URL
+        cmd = [python_exe, producer_path, '--url', url] # Modify the command to include the URL parameter
+        return subprocess.Popen(cmd)
+    
     @app.route('/create-camera', methods=['POST'])
     def create_camera_post():
         name = request.form['name']
@@ -45,9 +61,12 @@ def create_app(config_class=Config):
         new_camera = Camera(name=name, connection_url=connection_url)
         db.session.add(new_camera)
         db.session.commit()
+
+        streaming_process = start_streaming(connection_url)
+        camera_processes[new_camera.id] = streaming_process
         
         # Redirect the user back to the main dashboard page
-        return redirect(url_for('get_cameras'))
+        return redirect(url_for('home'))
 
     @app.route('/camera/<int:camera_id>')
     def view_camera(camera_id):
