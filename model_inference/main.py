@@ -5,7 +5,7 @@ from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from kafka import KafkaConsumer
 
-line_points=[]
+line_points=[(10, 400), (2000, 550)]
 ml_model = YOLOModel()
 counter = CounterApplication(ml_model, line_points)
 
