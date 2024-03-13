@@ -2,7 +2,7 @@ from ultralytics.utils.checks import check_imshow, check_requirements
 from ultralytics.utils.plotting import Annotator, colors
 import cv2
 from collections import defaultdict
-from onscreen import Annotator2
+from utils.surveillance_applications.object_counter.onscreen import Annotator2
 check_requirements("shapely>=2.0.0")
 
 from shapely.geometry import LineString, Point, Polygon
