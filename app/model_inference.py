@@ -1,9 +1,10 @@
-import sys
-sys.path.append("..")
-
+import cv2
+from PIL import Image
+import pytesseract
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from kafka import KafkaConsumer
+import numpy as np
 
 line_points=[(10, 400), (2000, 550)]
 ml_model = YOLOModel()
@@ -23,7 +24,7 @@ def inference(frame):
 def consume_kafka_stream():
     # Set your Kafka broker address
     bootstrap_servers = 'localhost:9092'
-    topic = 'video-frame'
+    topic = 'videostreaming'
 
     consumer = KafkaConsumer(topic,
                              bootstrap_servers=bootstrap_servers,
@@ -41,7 +42,7 @@ def consume_kafka_stream():
             inference_result = inference(frame)
 
             # Print or save the inference result
-            print(inference_result)
+            # print(inference_result)
 
     except KeyboardInterrupt:
         # Handle keyboard interrupt (Ctrl+C) gracefully

@@ -52,6 +52,14 @@ def create_app(config_class=Config):
         cmd = [python_exe, producer_path, '--url', url] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
+    def run_model_inference():
+        current_dir = os.path.dirname(os.path.realpath(__file__))
+        venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
+        python_exe = os.path.join(venv_path, 'python.exe')
+        inference_path = os.path.join(current_dir,'model_inference.py',)
+        cmd = [python_exe, inference_path] # Modify the command to include the URL parameter
+        return subprocess.Popen(cmd)
+    
     @app.route('/create-camera', methods=['POST'])
     def create_camera_post():
         name = request.form['name']
@@ -63,7 +71,8 @@ def create_app(config_class=Config):
         db.session.commit()
 
         streaming_process = start_streaming(connection_url)
-        camera_processes[new_camera.id] = streaming_process
+        inference_process = run_model_inference()
+        camera_processes[new_camera.id] = (streaming_process,inference_process)
         
         # Redirect the user back to the main dashboard page
         return redirect(url_for('home'))
