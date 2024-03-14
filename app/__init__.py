@@ -168,7 +168,20 @@ def create_app(config_class=Config):
         
         # Now, render the index.html page with the camera's details
         # You might need to adjust this depending on how index.html uses the camera's details
-        return render_template('camera_index.html', camera=camera)
+        return render_template('camera/settings.html', camera=camera)
+
+    @app.route('/update_camera/<int:camera_id>', methods=['POST'])
+    def update_camera(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        camera.name = request.form['name']
+        camera.connection_url = request.form['connection_url']
+        camera.description = request.form['description']
+        camera.state = bool(request.form.get('state'))
+        camera.set_line_points(request.form.get('line_points'))
+        camera.set_polygon_points(request.form.get('polygon_points'))
+        camera.set_alert_emails(request.form.get('alert_emails'))
+        db.session.commit()
+        return redirect(url_for('view_camera', camera_id=camera.id))
 
     @app.route('/camera/<int:camera_id>/intrusions', methods=['GET'])
     def view_intrusions(camera_id):
