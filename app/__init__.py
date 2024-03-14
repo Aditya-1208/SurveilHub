@@ -28,19 +28,12 @@ def create_app(config_class=Config):
     @app.route('/')
     def home():
         cameras = Camera.query.all()
-        cameras_data = [{'id': camera.id, 'name': camera.name, 'connection_url': camera.connection_url} for camera in cameras]
+        cameras_data = [{'id': camera.id, 'name': camera.name, 'description': camera.description} for camera in cameras]
         return render_template('main_dashboard.html',cameras=cameras_data)
 
     # Route to create a new camera
-    @app.route('/cameras', methods=['GET','POST'])
+    @app.route('/cameras', methods=['GET'])
     def create_camera():
-        if request.method == 'POST':
-            name = request.form['name']
-            connection_url = request.form['connection_url']
-            new_camera = Camera(name=name, connection_url=connection_url)
-            db.session.add(new_camera)
-            db.session.commit()
-            return redirect(url_for('home'))
         return render_template('create_camera.html')
     
     @app.route('/create-camera', methods=['GET'])
@@ -71,15 +64,14 @@ def create_app(config_class=Config):
     def create_camera_post():
         name = request.form['name']
         connection_url = request.form['connection_url']
-        
-        # Create a new camera object and add it to the database
-        new_camera = Camera(name=name, connection_url=connection_url)
+        description = request.form['description']
+        new_camera = Camera(name=name, connection_url=connection_url, description=description)
         db.session.add(new_camera)
         db.session.commit()
-
-        streaming_process = start_streaming(connection_url)
-        inference_process = run_model_inference()
-        camera_processes[new_camera.id] = (streaming_process,inference_process)
+        return redirect(url_for('home'))
+        # streaming_process = start_streaming(connection_url)
+        # inference_process = run_model_inference()
+        # camera_processes[new_camera.id] = (streaming_process,inference_process)
         
         # Redirect the user back to the main dashboard page
         return redirect(url_for('home'))
