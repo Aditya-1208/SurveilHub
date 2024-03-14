@@ -56,7 +56,7 @@ def create_app(config_class=Config):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
         python_exe = os.path.join(venv_path, 'python.exe')
-        inference_path = os.path.join(current_dir,'..','model_inference','main.py')
+        inference_path = os.path.join(current_dir,'model_inference.py',)
         cmd = [python_exe, inference_path] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
