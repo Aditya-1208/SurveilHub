@@ -168,7 +168,22 @@ def create_app(config_class=Config):
         
         # Now, render the index.html page with the camera's details
         # You might need to adjust this depending on how index.html uses the camera's details
-        return render_template('index.html', camera=camera)
+        return render_template('camera_index.html', camera=camera)
+
+    @app.route('/camera/<int:camera_id>/intrusions', methods=['GET'])
+    def view_intrusions(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        return render_template('camera/intrusions.html', camera=camera)
+        
+    @app.route('/camera/<int:camera_id>/object_detections', methods=['GET'])
+    def view_object_detections(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        return render_template('camera/object_detections.html', camera=camera)
+
+    @app.route('/camera/<int:camera_id>/traffic_insights', methods=['GET'])
+    def view_traffic_insights(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        return render_template('camera/traffic_insights.html', camera=camera)
 
     @app.route('/index')
     def index():
