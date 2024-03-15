@@ -1,7 +1,7 @@
 from utils.surveillance_applications.base_application import BaseApplication
-from utils.surveillance_applications.object_counter.helper import *
+from utils.surveillance_applications.intrusion.helper import *
 
-class CounterApplication(BaseApplication):
+class IntrusionApplication(BaseApplication):
     def __init__(self, inference_model, line_points):
         self.model = inference_model
         self.classes_to_count = [0, 1, 2, 3, 4, 5, 6] 
