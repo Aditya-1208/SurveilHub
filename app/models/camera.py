@@ -1,6 +1,9 @@
 from app.extensions import db
 from sqlalchemy.sql import func
+import app
 import json
+import os
+import cv2
 
 class Camera(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,3 +35,21 @@ class Camera(db.Model):
 
     def get_alert_emails(self):
         return json.loads(self.alert_emails) if self.alert_emails else []
+
+    def capture_frame(self):
+        # Open connection to camera
+        cap = cv2.VideoCapture(self.connection_url)
+
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+
+        if ret:
+            # Save the frame
+            save_path = os.path.join(os.path.dirname(__file__),'..','static', 'camera','reference_images', f'frame{self.id}.jpg')
+            print(save_path)
+            cv2.imwrite(save_path, frame)
+            self.image_path = f'frame{self.id}.jpg'
+            db.session.commit()
+            print("Image saved successfully.")
+        else:
+            print("Failed to capture frame.")

@@ -6,6 +6,12 @@
 </h3>
 
 <form method="POST" action="{{ url_for('update_camera', camera_id=camera.id) }}" class="mt-3">
+    <div class="container">
+        <img src="{% if camera.image_path %}/static/camera/reference_images/{{ camera.image_path }}{% else %}/static/images/default.jpg{% endif %}"
+            class="card-img-top" alt="...">
+        <a href="{{ url_for('fetch_camera_frame', camera_id=camera.id) }}" class="btn btn-secondary">Fetch frame from
+            stream</a>
+    </div>
     <div class="form-group">
         <label for="name">Name:</label>
         <input type="text" id="name" name="name" value="{{ camera.name }}" class="form-control">
@@ -38,5 +44,12 @@
 
     <button type="submit" class="btn btn-primary">Submit</button>
 </form>
+
+<style>
+    img {
+        max-height: 50vh;
+        object-fit: contain;
+    }
+</style>
 
 {% endblock %}

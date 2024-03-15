@@ -197,6 +197,14 @@ def create_app(config_class=Config):
     def view_traffic_insights(camera_id):
         camera = Camera.query.get_or_404(camera_id)
         return render_template('camera/traffic_insights.html', camera=camera)
+    
+
+    @app.route('/camera/<int:camera_id>/fetch_frame', methods=['GET'])
+    def fetch_camera_frame(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        camera.capture_frame()
+        return redirect(url_for('view_camera', camera_id=camera.id))
+    
 
     @app.route('/index')
     def index():
