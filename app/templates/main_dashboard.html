@@ -13,7 +13,8 @@
     {% for camera in cameras %}
     <div class="col-md-4 mb-4">
         <div class="card" style="width: 18rem;">
-            <img src="..." class="card-img-top" alt="...">
+            <img src="{% if camera.image_path %}{{ camera.image_path }}{% else %}/static/images/default.jpg{% endif %}"
+                class="card-img-top" alt="...">
             <div class="card-body">
                 <h5 class="card-title">{{ camera.name }}</h5>
                 <p class="card-text">{{ camera.description }}</p>
