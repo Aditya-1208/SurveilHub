@@ -5,7 +5,8 @@
     Camera and detection settings
 </h3>
 
-<form method="POST" action="{{ url_for('update_camera', camera_id=camera.id) }}" class="mt-3 pb-4">
+<form method="POST" action="{{ url_for('update_camera', camera_id=camera.id) }}" id="cameraSettingsForm"
+    class="mt-3 pb-4">
     <div class="container d-flex flex-column">
         <img src="{% if camera.image_path %}/static/camera/reference_images/{{ camera.image_path }}{% else %}/static/images/default.jpg{% endif %}"
             class="card-img-top mb-4" alt="...">

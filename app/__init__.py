@@ -176,8 +176,8 @@ def create_app(config_class=Config):
         camera.connection_url = request.form['connection_url']
         camera.description = request.form['description']
         camera.state = bool(request.form.get('state'))
-        camera.set_line_points(request.form.get('line_points'))
-        camera.set_polygon_points(request.form.get('polygon_points'))
+        camera.set_regions(request.form.get('regions'))
+        camera.set_region_colors(request.form.get('region_colors'))
         camera.set_alert_emails(request.form.get('alert_emails'))
         db.session.commit()
         return redirect(url_for('view_camera', camera_id=camera.id))
@@ -203,7 +203,6 @@ def create_app(config_class=Config):
         camera = Camera.query.get_or_404(camera_id)
         camera.capture_frame()
         return redirect(url_for('view_camera', camera_id=camera.id))
-    
 
     @app.route('/index')
     def index():

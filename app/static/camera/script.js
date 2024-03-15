@@ -161,13 +161,9 @@ canvas.addEventListener('dragover', function (e) {
 //     zoom(delta);
 // });
 
-// document.querySelector('#saveImage').addEventListener('click', function (e) {
-//     e.preventDefault();
-//     var link = document.createElement('a');
-//     link.download = 'image.png';
-//     link.href = canvas.toDataURL();
-//     link.click();
-// });
+document.querySelector('#saveChanges').addEventListener('click', function (e) {
+    document.querySelector('#cameraSettingsForm').submit();
+});
 
 // on canvas hover, if cursor is crosshair, draw line from last point to cursor
 canvas.addEventListener('mousemove', function (e) {
