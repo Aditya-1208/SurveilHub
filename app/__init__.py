@@ -28,8 +28,7 @@ def create_app(config_class=Config):
     @app.route('/')
     def home():
         cameras = Camera.query.all()
-        cameras_data = [{'id': camera.id, 'name': camera.name, 'description': camera.description} for camera in cameras]
-        return render_template('main_dashboard.html',cameras=cameras_data)
+        return render_template('main_dashboard.html',cameras=cameras)
 
     # Route to create a new camera
     @app.route('/cameras', methods=['GET'])
