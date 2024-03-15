@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email</title>
+</head>
+<body>
+    <h1>Send Email</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="post" enctype="multipart/form-data">
+        <label for="recipient">Recipient Email:</label>
+        <input type="email" name="recipient" required><br><br>
+
+        <label for="subject">Subject:</label>
+        <input type="text" name="subject" required><br><br>
+
+        <label for="body">Body:</label><br>
+        <textarea name="body" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="image">Select Image:</label>
+        <input type="file" name="image" accept="image/*" required><br><br>
+
+        <button type="submit">Send Email</button>
+    </form>
+</body>
+</html>

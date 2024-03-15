@@ -8,6 +8,9 @@ from flask_migrate import Migrate
 from app.extensions import db
 from app.models.camera import Camera
 from app.models.object_detection import ObjectDetection
+#from sending_mail import send_mail_with_image
+from main_mail import send_email
+#from test import send_email
 
 def create_app(config_class=Config):
     app = Flask(__name__)
@@ -73,31 +76,117 @@ def create_app(config_class=Config):
         return render_template('index.html', camera=camera)
 
     @app.route('/send-email', methods=['GET','POST'])
-    def send_email():
-        # if request.method == 'POST':
-        #     # Get user input from the form
-        #     subject = request.form['subject']
-        #     recipient = request.form['recipient']
-        #     message_body = request.form['message_body']
+    def send_email_route():
+        if request.method == 'POST':
+            recipients = [request.form['recipient']]
+            subject = request.form['subject']
+            body = request.form['body']
 
-        #     # Create a Flask-Mail Message object
-        #     msg = Message(subject, sender='your_email@example.com', recipients=[recipient])
-        #     msg.body = message_body
+            if 'image' not in request.files:
+                flash('No image provided', 'error')
+                return render_template('sending_email.html')
 
-        #     try:
-        #         # Send the email
-        #         mail.send(msg)
-        #         return "Email sent successfully!"
-        #     except Exception as e:
-        #         return f"Error sending email: {str(e)}"
-        msg = Message(subject='Hello from the other side!', sender=os.getenv('MAIL_USERNAME'), recipients=['aditya.agr.btp@gmail.com'])
-        msg.body = "Hey Paul, sending you this email from my Flask app, lmk if it works"
-        mail.send(msg)
-        return "Message sent!"
+            image_file = request.files['image']
+            if image_file.filename == '':
+                flash('No image filename provided', 'error')
+                return render_template('sending_email.html')
 
-    @app.route('/index')
-    def index():
-        return render_template('index.html')
+            image_filename = image_file.filename
+            image_mime_type = image_file.mimetype
+
+            attachments = [{'path': image_file, 'filename': image_filename, 'mime_type': image_mime_type}]
+
+            try:
+                send_email(mail, recipients, subject, body, attachments)
+                flash('Email sent successfully', 'success')
+            except Exception as e:
+                flash('Failed to send email: ' + str(e), 'error')
+
+            return render_template('sending_email.html')
+    #    if request.method == 'POST':
+    #         recipients = request.form.getlist('recipients')
+    #         subject = request.form['subject']
+    #         body = request.form['body']
+    #         attachments = []
+
+    #         # Handle file upload
+    #         if 'attachment' in request.files:
+    #             attachment = request.files['attachment']
+    #             if attachment.filename != '':
+    #                 attachments.append({
+    #                     'path': attachment,
+    #                     'filename': attachment.filename,
+    #                     'mime_type': attachment.content_type
+    #                 })
+
+    #         # Send email
+    #         try:
+    #             send_email(recipients, subject, body, attachments)
+    #             flash('Email sent successfully', 'success')
+    #         except Exception as e:
+    #             flash('Failed to send email: ' + str(e), 'error')
+
+    #         return render_template('sending_email.html')
+
+        # recipient = request.form['recipient']
+        # subject = request.form['subject']
+        # body = request.form['body']
+
+        # if 'image' not in request.files:
+        #     return "No image provided", 400
+
+        # image_file = request.files['image']
+        # image_filename = image_file.filename
+        # if not image_filename:
+        #     return "No image filename provided", 400
+
+        # image_data = image_file.read()
+        # image_type = 'image/png'  # Assuming the image is always a PNG file
+
+        # msg = Message(subject=subject, recipients=[recipient])
+        # msg.body = body
+        # msg.attach(image_filename, image_type, image_data)
+
+        # try:
+        #     mail.send(msg)
+        #     return "Message sent successfully"
+        # except Exception as e:
+        #     return f"Failed to send message: {str(e)}", 500
+
+    #     if request.method == 'POST':
+    #         recipient = request.form['recipient']
+    #         subject = request.form['subject']
+    #         body = request.form['body']
+    #         image = request.files['image']
+
+    #         if image.filename == '':
+    #             flash('No selected image')
+    #             return redirect(request.url)
+
+    #         if recipient and subject and body and image:
+    #             try:
+    #                 send_mail_with_image(recipient, subject, body, image)
+    #                 flash('Email sent successfully')
+    #             except Exception as e:
+    #                 flash('Failed to send email: ' + str(e))
+    #         else:
+    #             flash('All form fields are required')
+
+    #     return render_template('sending_email.html')
+
+# def send_mail_with_image(recipient, subject, body, image):
+#     image_data = image.read()
+#     image_type = 'image/png'  # Assuming the image is always a PNG file
+
+#     msg = Message(subject=subject, recipients=[recipient])
+#     msg.body = body
+#     msg.attach(image.filename, image_type, image_data)
+
+#     mail.send(msg)
+
+#     @app.route('/index')
+#     def index():
+#         return render_template('index.html')
     
     return app
 
