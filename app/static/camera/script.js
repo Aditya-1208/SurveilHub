@@ -15,8 +15,8 @@ var color_choices = [
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext('2d');
 var img = new Image();
-var rgb_color = color_choices[Math.floor(Math.random() * color_choices.length)] 
-var opaque_color =  'rgba(0,0,0,0.5)';
+var rgb_color = color_choices[Math.floor(Math.random() * color_choices.length)]
+var opaque_color = 'rgba(0,0,0,0.5)';
 
 var scaleFactor = 1;
 var scaleSpeed = 0.01;
@@ -33,7 +33,7 @@ var modeMessage = document.querySelector('#mode');
 var coords = document.querySelector('#coords');
 
 // if user presses L key, change draw mode to line and change cursor to cross hair
-document.addEventListener('keydown', function(e) {
+document.addEventListener('keydown', function (e) {
     if (e.key == 'l') {
         drawMode = "line";
         canvas.style.cursor = 'crosshair';
@@ -65,8 +65,9 @@ function zoom(clicks) {
 }
 
 // placeholder image
-img.src = 'https://assets.website-files.com/5f6bc60e665f54545a1e52a5/63d3f236a6f0dae14cdf0063_drag-image-here.png';
-img.onload = function() {
+img.src = image_path;
+console.log(img.src)
+img.onload = function () {
     scaleFactor = 0.5;
     canvas.style.width = img.width * scaleFactor + 'px';
     canvas.style.height = img.height * scaleFactor + 'px';
@@ -92,7 +93,7 @@ function getScaledCoords(e) {
     return [x / scaleFactor, y / scaleFactor];
 }
 
-function drawAllPolygons () {
+function drawAllPolygons() {
     // draw all points for previous regions
     for (var i = 0; i < masterPoints.length; i++) {
         var newpoints = masterPoints[i];
@@ -134,22 +135,22 @@ function clearall() {
     document.querySelector('#python').innerHTML = '';
 }
 
-document.querySelector('#clear').addEventListener('click', function(e) {
+document.querySelector('#clear').addEventListener('click', function (e) {
     e.preventDefault();
     clearall();
 });
 
-document.querySelector('#clipboard').addEventListener('click', function(e) {
+document.querySelector('#clipboard').addEventListener('click', function (e) {
     e.preventDefault();
     clipboard("#clipboard");
 });
 
-document.querySelector('#clipboardJSON').addEventListener('click', function(e) {
+document.querySelector('#clipboardJSON').addEventListener('click', function (e) {
     e.preventDefault();
     clipboard("#clipboardJSON");
 });
 
-canvas.addEventListener('dragover', function(e) {
+canvas.addEventListener('dragover', function (e) {
     e.preventDefault();
 });
 
@@ -158,16 +159,16 @@ canvas.addEventListener('dragover', function(e) {
 //     zoom(delta);
 // });
 
-document.querySelector('#saveImage').addEventListener('click', function(e) {
-    e.preventDefault();
-    var link = document.createElement('a');
-    link.download = 'image.png';
-    link.href = canvas.toDataURL();
-    link.click();
-});
+// document.querySelector('#saveImage').addEventListener('click', function (e) {
+//     e.preventDefault();
+//     var link = document.createElement('a');
+//     link.download = 'image.png';
+//     link.href = canvas.toDataURL();
+//     link.click();
+// });
 
 // on canvas hover, if cursor is crosshair, draw line from last point to cursor
-canvas.addEventListener('mousemove', function(e) {
+canvas.addEventListener('mousemove', function (e) {
     var x = getScaledCoords(e)[0];
     var y = getScaledCoords(e)[1];
     // round
@@ -229,7 +230,7 @@ canvas.addEventListener('mousemove', function(e) {
     }
 });
 
-window.addEventListener('keydown', function(e) {
+window.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') {
         canvas.style.cursor = 'default';
         // remove line drawn by mouseover
@@ -259,26 +260,26 @@ window.addEventListener('keydown', function(e) {
         ctx.stroke();
         points = [];
         // dont choose a color that has already been chosen
-        var remaining_choices = color_choices.filter(function(x) {
+        var remaining_choices = color_choices.filter(function (x) {
             return !masterColors.includes(x);
         });
-        
+
         if (remaining_choices.length == 0) {
             remaining_choices = color_choices;
         }
 
         rgb_color = remaining_choices[Math.floor(Math.random() * remaining_choices.length)];
-    
+
         masterColors.push(rgb_color);
     }
 });
 
-canvas.addEventListener('drop', function(e) {
+canvas.addEventListener('drop', function (e) {
     e.preventDefault();
     var file = e.dataTransfer.files[0];
     var reader = new FileReader();
-    
-    reader.onload = function(event) {
+
+    reader.onload = function (event) {
         // only allow image files
         img.src = event.target.result;
     };
@@ -295,7 +296,7 @@ canvas.addEventListener('drop', function(e) {
         return;
     }
 
-    img.onload = function() {
+    img.onload = function () {
         scaleFactor = 0.25;
         canvas.style.width = img.width * scaleFactor + 'px';
         canvas.style.height = img.height * scaleFactor + 'px';
@@ -330,33 +331,29 @@ function writePoints(parentPoints) {
 
     // create np.array list
     var code_template = `
-[
-${parentPoints.map(function(points) {
-return `np.array([
-${points.map(function(point) {
-    return `[${point[0]}, ${point[1]}]`;
-}).join(',')}
-])`;
-}).join(',')}
-]
+[${parentPoints.map(function (points) {
+        return `[${points.map(function (point) {
+            return `[${point[0]}, ${point[1]}]`;
+        }).join(',')}]`;
+    }).join(',')}]
     `;
     document.querySelector('#python').innerHTML = code_template;
 
     var json_template = `
 {
-${parentPoints.map(function(points) {
-return `[
-${points.map(function(point) {
-return `{"x": ${point[0]}, "y": ${point[1]}}`;
-}).join(',')}
+${parentPoints.map(function (points) {
+        return `[
+${points.map(function (point) {
+            return `{"x": ${point[0]}, "y": ${point[1]}}`;
+        }).join(',')}
 ]`;
-}).join(',')}
+    }).join(',')}
 }
     `;
     document.querySelector('#json').innerHTML = json_template;
 }
 
-canvas.addEventListener('click', function(e) {
+canvas.addEventListener('click', function (e) {
     // set cursor to crosshair
     canvas.style.cursor = 'crosshair';
     // if line mode and two points have been drawn, add to masterPoints
@@ -373,7 +370,7 @@ canvas.addEventListener('click', function(e) {
     ctx.beginPath();
     ctx.strokeStyle = rgb_color;
     // add rgb_color to masterColors
-    
+
     if (masterColors.length == 0) {
         masterColors.push(rgb_color);
     }
@@ -391,7 +388,7 @@ canvas.addEventListener('click', function(e) {
     writePoints(parentPoints);
 });
 
-document.querySelector('#normalize_checkbox').addEventListener('change', function(e) {
+document.querySelector('#normalize_checkbox').addEventListener('change', function (e) {
     showNormalized = e.target.checked;
     // normalize all
     var parentPoints = [];

@@ -13,7 +13,7 @@
             <a href="{{ url_for('fetch_camera_frame', camera_id=camera.id) }}" class="btn btn-dark">Fetch frame
                 from
                 stream</a>
-            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#exampleModal">
+            <button type="button" class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#exampleModal">
                 Edit detection boundaries
             </button>
         </div>
@@ -59,4 +59,9 @@
     }
 </style>
 
+<script>
+    var image_path = "/static/camera/reference_images/{{camera.image_path}}"
+</script>
+
+{% include 'camera/polygon_drawer.html' %}
 {% endblock %}
