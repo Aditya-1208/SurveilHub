@@ -23,6 +23,8 @@ def create_app(config_class=Config):
     app.config.from_object(config_class)
 
 
+    # app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\SurveilHub\\app\\Images'
+
     db.init_app(app)
     migrate = Migrate(app, db)
 

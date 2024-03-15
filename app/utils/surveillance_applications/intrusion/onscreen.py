@@ -332,13 +332,15 @@ class Annotator2:
     # Object Counting Annotator2
     def draw_region(self, reg_pts=None, color=(0, 255, 0), thickness=5):
         """
-        Draw region line
+        Draw region lines for multiple polygons
         Args:
-            reg_pts (list): Region Points (for line 2 points, for region 4 points)
+            reg_pts (list): List of lists of region points (each sublist contains points for one polygon)
             color (tuple): Region Color value
             thickness (int): Region area thickness value
         """
-        cv2.polylines(self.im, [np.array(reg_pts, dtype=np.int32)], isClosed=True, color=color, thickness=thickness)
+        for pts in reg_pts:
+            cv2.polylines(self.im, [np.array(pts, dtype=np.int32)], isClosed=True, color=color, thickness=thickness)
+
 
     def draw_centroid_and_tracks(self, track, color=(255, 0, 255), track_thickness=2):
         """

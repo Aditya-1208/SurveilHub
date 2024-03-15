@@ -18,7 +18,7 @@ class ObjectCounter:
         self.selected_point = None
 
         # Region & Line Information
-        self.reg_pts = [(1072, 568), (441, 426), (984, 161), (1279, 283)]
+        self.reg_pts = [[(680, 257), (986, 125), (1174, 189), (930, 290)],[(602, 530), (450, 434), (626, 308), (1106, 415)]]
         self.line_dist_thresh = 15
         self.counting_region = None
         self.region_color = (255, 0, 255)
@@ -97,19 +97,13 @@ class ObjectCounter:
         self.track_thickness = track_thickness
         self.draw_tracks = draw_tracks
 
-        # Region and line selection
-        if len(reg_pts) == 2:
-            print("Line Counter Initiated.")
-            self.reg_pts = reg_pts
-            self.counting_region = LineString(self.reg_pts)
-        elif len(reg_pts) == 4:
-            print("Region Counter Initiated.")
-            self.reg_pts = reg_pts
-            self.counting_region = Polygon(self.reg_pts)
-        else:
-            print("Invalid Region points provided, region_points can be 2 or 4")
-            print("Using Line Counter Now")
-            self.counting_region = LineString(self.reg_pts)
+
+        
+        print("Region Counter Initiated.")
+        self.reg_pts = reg_pts
+        self.counting_region = [Polygon(pts) for pts in self.reg_pts]
+        self.counting_list = [[] for _ in range(len(self.counting_region))]
+
 
         self.names = classes_names
         self.track_color = track_color
@@ -120,50 +114,50 @@ class ObjectCounter:
         self.region_thickness = region_thickness
         self.line_dist_thresh = line_dist_thresh
 
-    def mouse_event_for_region(self, event, x, y, flags, params):
-        """
-        This function is designed to move region with mouse events in a real-time video stream.
+    # def mouse_event_for_region(self, event, x, y, flags, params):
+    #     """
+    #     This function is designed to move region with mouse events in a real-time video stream.
 
-        Args:
-            event (int): The type of mouse event (e.g., cv2.EVENT_MOUSEMOVE, cv2.EVENT_LBUTTONDOWN, etc.).
-            x (int): The x-coordinate of the mouse pointer.
-            y (int): The y-coordinate of the mouse pointer.
-            flags (int): Any flags associated with the event (e.g., cv2.EVENT_FLAG_CTRLKEY,
-                cv2.EVENT_FLAG_SHIFTKEY, etc.).
-            params (dict): Additional parameters you may want to pass to the function.
-        """
-        if event == cv2.EVENT_LBUTTONDOWN:
-            for i, point in enumerate(self.reg_pts):
-                if (
-                    isinstance(point, (tuple, list))
-                    and len(point) >= 2
-                    and (abs(x - point[0]) < 10 and abs(y - point[1]) < 10)
-                ):
-                    self.selected_point = i
-                    self.is_drawing = True
-                    break
+    #     Args:
+    #         event (int): The type of mouse event (e.g., cv2.EVENT_MOUSEMOVE, cv2.EVENT_LBUTTONDOWN, etc.).
+    #         x (int): The x-coordinate of the mouse pointer.
+    #         y (int): The y-coordinate of the mouse pointer.
+    #         flags (int): Any flags associated with the event (e.g., cv2.EVENT_FLAG_CTRLKEY,
+    #             cv2.EVENT_FLAG_SHIFTKEY, etc.).
+    #         params (dict): Additional parameters you may want to pass to the function.
+    #     """
+    #     if event == cv2.EVENT_LBUTTONDOWN:
+    #         for i, point in enumerate(self.reg_pts):
+    #             if (
+    #                 isinstance(point, (tuple, list))
+    #                 and len(point) >= 2
+    #                 and (abs(x - point[0]) < 10 and abs(y - point[1]) < 10)
+    #             ):
+    #                 self.selected_point = i
+    #                 self.is_drawing = True
+    #                 break
 
-        elif event == cv2.EVENT_MOUSEMOVE:
-            if self.is_drawing and self.selected_point is not None:
-                self.reg_pts[self.selected_point] = (x, y)
-                self.counting_region = Polygon(self.reg_pts)
+    #     elif event == cv2.EVENT_MOUSEMOVE:
+    #         if self.is_drawing and self.selected_point is not None:
+    #             self.reg_pts[self.selected_point] = (x, y)
+    #             self.counting_region = Polygon(self.reg_pts)
 
-        elif event == cv2.EVENT_LBUTTONUP:
-            self.is_drawing = False
-            self.selected_point = None
+    #     elif event == cv2.EVENT_LBUTTONUP:
+    #         self.is_drawing = False
+    #         self.selected_point = None
 
     def extract_and_process_tracks(self, tracks):
         boxes = tracks[0].boxes.xyxy.cpu()
         clss = tracks[0].boxes.cls.cpu().tolist()
         track_ids = tracks[0].boxes.id.int().cpu().tolist()
 
-        self.annotator = Annotator(self.im0, self.tf, self.names)
-        # self.annotator2 = Annotator2(self.im0, self.tf, self.names)
-        self.annotator.draw_region(reg_pts=self.reg_pts, color=self.region_color, thickness=self.region_thickness)
+        # self.annotator = Annotator(self.im0, self.tf, self.names)
+        self.annotator2 = Annotator2(self.im0, self.tf, self.names)
+        self.annotator2.draw_region(reg_pts=self.reg_pts, color=self.region_color, thickness=self.region_thickness)
 
         for box, track_id, cls in zip(boxes, track_ids, clss):
             # Draw bounding box
-            self.annotator.box_label(box, label=f"{track_id}:{self.names[cls]}", color=colors(int(cls), True))
+            self.annotator2.box_label(box, label=f"{track_id}:{self.names[cls]}", color=colors(int(cls), True))
 
             # Draw Tracks
             track_line = self.track_history[track_id]
@@ -173,35 +167,30 @@ class ObjectCounter:
 
             # Draw track trails
             if self.draw_tracks:
-                self.annotator.draw_centroid_and_tracks(
+                self.annotator2.draw_centroid_and_tracks(
                     track_line, color=self.track_color, track_thickness=self.track_thickness
                 )
 
             prev_position = self.track_history[track_id][-2] if len(self.track_history[track_id]) > 1 else None
 
-            # Count objects per class
-            if len(self.reg_pts) == 4:
+            for index, polygon in enumerate(self.counting_region):
                 if (
                     prev_position is not None
-                    and self.counting_region.contains(Point(track_line[-1]))
-                    and track_id not in self.counting_list
+                    and polygon.contains(Point(track_line[-1]))
+                    and track_id not in self.counting_list[index]
                 ):
-                    self.counting_list.append(track_id)
-                    # if (box[0] - prev_position[0]) > 0:
-                        # self.in_counts[cls] += 1
-                    # else:
-                        # self.out_counts[cls] += 1
+                    self.counting_list[index].append(track_id)
                     self.in_counts[cls] += 1
-            elif len(self.reg_pts) == 2:
-                if prev_position is not None:
-                    distance = Point(track_line[-1]).distance(self.counting_region)
-                    if distance < self.line_dist_thresh and track_id not in self.counting_list:
-                        self.counting_list.append(track_id)
-                        # if (box[0] - prev_position[0]) > 0:
-                            # self.in_counts[cls] += 1
-                        # else:
-                            # self.out_counts[cls] += 1
-                        self.in_counts[cls] += 1
+            # elif len(self.reg_pts) == 2:
+            #     if prev_position is not None:
+            #         distance = Point(track_line[-1]).distance(self.counting_region)
+            #         if distance < self.line_dist_thresh and track_id not in self.counting_list:
+            #             self.counting_list.append(track_id)
+            #             # if (box[0] - prev_position[0]) > 0:
+            #                 # self.in_counts[cls] += 1
+            #             # else:
+            #                 # self.out_counts[cls] += 1
+            #             self.in_counts[cls] += 1
 
         # Construct class-wise count labels
         incount_labels = ["In Count: "]
@@ -219,7 +208,7 @@ class ObjectCounter:
 
         # Display counts labels on the image
         if incount_str is not None:
-            self.annotator.count_labels(
+            self.annotator2.count_labels(
                 counts=incount_str,  # Append newline character here
                 count_txt_size=self.count_txt_thickness,  # Adjust text size here
                 txt_color=self.count_txt_color,
