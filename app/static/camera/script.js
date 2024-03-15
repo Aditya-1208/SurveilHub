@@ -132,8 +132,8 @@ function clearall() {
     ctx.drawImage(img, 0, 0);
     points = [];
     masterPoints = [];
-    document.querySelector('#json').innerHTML = '';
-    document.querySelector('#python').innerHTML = '';
+    // document.querySelector('#json').innerHTML = '';
+    // document.querySelector('#python').innerHTML = '';
     document.querySelector('#regions').value = '';
     document.querySelector('#region_colors').value = '';
 }
@@ -143,15 +143,15 @@ document.querySelector('#clear').addEventListener('click', function (e) {
     clearall();
 });
 
-document.querySelector('#clipboard').addEventListener('click', function (e) {
-    e.preventDefault();
-    clipboard("#clipboard");
-});
+// document.querySelector('#clipboard').addEventListener('click', function (e) {
+//     e.preventDefault();
+//     clipboard("#clipboard");
+// });
 
-document.querySelector('#clipboardJSON').addEventListener('click', function (e) {
-    e.preventDefault();
-    clipboard("#clipboardJSON");
-});
+// document.querySelector('#clipboardJSON').addEventListener('click', function (e) {
+//     e.preventDefault();
+//     clipboard("#clipboardJSON");
+// });
 
 canvas.addEventListener('dragover', function (e) {
     e.preventDefault();
@@ -336,7 +336,7 @@ function writePoints(parentPoints) {
     }).join(',')}]`;
 
     var color_template = `[${masterColors.map(color => `"${color}"`).join(',')}]`;
-    document.querySelector('#python').innerHTML = code_template;
+    // document.querySelector('#python').innerHTML = code_template;
     document.querySelector('#regions').value = code_template;
     document.querySelector('#region_colors').value = color_template;
 
@@ -352,7 +352,7 @@ ${points.map(function (point) {
     }).join(',')}
 }
     `;
-    document.querySelector('#json').innerHTML = json_template;
+    // document.querySelector('#json').innerHTML = json_template;
 }
 
 canvas.addEventListener('click', function (e) {
@@ -390,16 +390,16 @@ canvas.addEventListener('click', function (e) {
     writePoints(parentPoints);
 });
 
-document.querySelector('#normalize_checkbox').addEventListener('change', function (e) {
-    showNormalized = e.target.checked;
-    // normalize all
-    var parentPoints = [];
+// document.querySelector('#normalize_checkbox').addEventListener('change', function (e) {
+//     showNormalized = e.target.checked;
+//     // normalize all
+//     var parentPoints = [];
 
-    for (var i = 0; i < masterPoints.length; i++) {
-        parentPoints.push(masterPoints[i]);
-    }
+//     for (var i = 0; i < masterPoints.length; i++) {
+//         parentPoints.push(masterPoints[i]);
+//     }
 
-    parentPoints.push(points);
+//     parentPoints.push(points);
 
-    writePoints(parentPoints);
-});
+//     writePoints(parentPoints);
+// });
