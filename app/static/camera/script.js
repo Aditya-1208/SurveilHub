@@ -23,8 +23,8 @@ var scaleSpeed = 0.01;
 
 var points = [];
 var regions = [];
-var masterPoints = [];
-var masterColors = [];
+var masterPoints = masterPoints || [];
+var masterColors = masterColors || [];
 
 var showNormalized = false;
 var drawMode = "polygon";
@@ -75,6 +75,7 @@ img.onload = function () {
     canvas.height = img.height;
     canvas.style.borderRadius = '10px';
     ctx.drawImage(img, 0, 0);
+    drawAllPolygons();
 };
 
 function drawLine(x1, y1, x2, y2) {
@@ -334,7 +335,7 @@ function writePoints(parentPoints) {
         }).join(',')}]`;
     }).join(',')}]`;
 
-    var color_template = `[${masterColors.join(',')}]`
+    var color_template = `[${masterColors.map(color => `"${color}"`).join(',')}]`;
     document.querySelector('#python').innerHTML = code_template;
     document.querySelector('#regions').value = code_template;
     document.querySelector('#region_colors').value = color_template;

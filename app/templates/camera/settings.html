@@ -62,6 +62,8 @@
 
 <script>
     var image_path = "/static/camera/reference_images/{{camera.image_path}}"
+    var masterPoints = JSON.parse({{ camera.get_regions() | tojson }});
+    var masterColors = JSON.parse({{ camera.get_region_colors() | tojson }});
 </script>
 
 {% include 'camera/polygon_drawer.html' %}

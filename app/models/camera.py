@@ -19,19 +19,19 @@ class Camera(db.Model):
     time_updated = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
     def set_regions(self, points):
-        self.regions = json.dumps(points)
+        self.regions = "[]" if not points else json.dumps(points)
 
     def get_regions(self):
         return json.loads(self.regions) if self.regions else []
 
     def set_region_colors(self, points):
-        self.region_colors = json.dumps(points)
+        self.region_colors = "[]" if not points else json.dumps(points)
 
     def get_region_colors(self):
         return json.loads(self.region_colors) if self.region_colors else []
 
     def set_alert_emails(self, emails):
-        self.alert_emails = json.dumps(emails)
+        self.alert_emails = "[]" if not emails else json.dumps(emails)
 
     def get_alert_emails(self):
         return json.loads(self.alert_emails) if self.alert_emails else []
