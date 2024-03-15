@@ -11,24 +11,24 @@ class Camera(db.Model):
     connection_url = db.Column(db.String(150), nullable=False)
     description = db.Column(db.Text, nullable=True)
     state = db.Column(db.Boolean, default=False)
-    line_points = db.Column(db.Text, nullable=True)
-    polygon_points = db.Column(db.Text, nullable=True)
+    regions = db.Column(db.Text, nullable=True)
+    region_colors = db.Column(db.Text, nullable=True)
     alert_emails = db.Column(db.Text, nullable=True)
     image_path = db.Column(db.String(150), nullable=True)
     time_created = db.Column(db.DateTime(timezone=True), server_default=func.now())
     time_updated = db.Column(db.DateTime(timezone=True), onupdate=func.now())
 
-    def set_line_points(self, points):
-        self.line_points = json.dumps(points)
+    def set_regions(self, points):
+        self.regions = json.dumps(points)
 
-    def get_line_points(self):
-        return json.loads(self.line_points) if self.line_points else []
+    def get_regions(self):
+        return json.loads(self.regions) if self.regions else []
 
-    def set_polygon_points(self, points):
-        self.polygon_points = json.dumps(points)
+    def set_region_colors(self, points):
+        self.region_colors = json.dumps(points)
 
-    def get_polygon_points(self):
-        return json.loads(self.polygon_points) if self.polygon_points else []
+    def get_region_colors(self):
+        return json.loads(self.region_colors) if self.region_colors else []
 
     def set_alert_emails(self, emails):
         self.alert_emails = json.dumps(emails)
