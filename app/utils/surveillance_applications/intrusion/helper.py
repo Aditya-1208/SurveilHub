@@ -146,7 +146,8 @@ class ObjectCounter:
     #         self.is_drawing = False
     #         self.selected_point = None
 
-    def extract_and_process_tracks(self, tracks):
+
+    def extract_and_process_tracks(self, tracks, im0):
         boxes = tracks[0].boxes.xyxy.cpu()
         clss = tracks[0].boxes.cls.cpu().tolist()
         track_ids = tracks[0].boxes.id.int().cpu().tolist()
@@ -181,18 +182,13 @@ class ObjectCounter:
                 ):
                     self.counting_list[index].append(track_id)
                     self.in_counts[cls] += 1
-            # elif len(self.reg_pts) == 2:
-            #     if prev_position is not None:
-            #         distance = Point(track_line[-1]).distance(self.counting_region)
-            #         if distance < self.line_dist_thresh and track_id not in self.counting_list:
-            #             self.counting_list.append(track_id)
-            #             # if (box[0] - prev_position[0]) > 0:
-            #                 # self.in_counts[cls] += 1
-            #             # else:
-            #                 # self.out_counts[cls] += 1
-            #             self.in_counts[cls] += 1
 
-        # Construct class-wise count labels
+                    # Show or save the image frame
+                    cv2.imwrite(f"triggered_frame_{index}.jpg", im0)
+                    # Alternatively, you can display the frame using OpenCV's imshow
+                    # cv2.imshow("Triggered Frame", im0)
+                    # cv2.waitKey(0)
+                # Construct class-wise count labels
         incount_labels = ["In Count: "]
         # outcount_labels = ["Out Count: "]
         for cls, count in self.in_counts.items():
@@ -214,14 +210,6 @@ class ObjectCounter:
                 txt_color=self.count_txt_color,
                 color=self.count_color,
             )
-
-        # if outcount_str is not None:
-        #     self.annotator2.count_labels(
-        #         counts=outcount_str,
-        #         count_txt_size=self.count_txt_thickness,  # Adjust text size here
-        #         txt_color=self.count_txt_color,
-        #         color=self.count_color,
-        #     )
 
 
 
@@ -252,7 +240,7 @@ class ObjectCounter:
             if self.view_img:
                 self.display_frames()
             return im0
-        self.extract_and_process_tracks(tracks)
+        self.extract_and_process_tracks(tracks, im0)
 
         if self.view_img:
             self.display_frames()
