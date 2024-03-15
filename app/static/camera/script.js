@@ -133,6 +133,8 @@ function clearall() {
     masterPoints = [];
     document.querySelector('#json').innerHTML = '';
     document.querySelector('#python').innerHTML = '';
+    document.querySelector('#regions').value = '';
+    document.querySelector('#region_colors').value = '';
 }
 
 document.querySelector('#clear').addEventListener('click', function (e) {
@@ -330,14 +332,17 @@ function writePoints(parentPoints) {
     }
 
     // create np.array list
-    var code_template = `
-[${parentPoints.map(function (points) {
+    var code_template = `[${parentPoints.map(function (points) {
         return `[${points.map(function (point) {
             return `[${point[0]}, ${point[1]}]`;
         }).join(',')}]`;
-    }).join(',')}]
-    `;
+    }).join(',')}]`;
+
+    var color_template = `[${masterColors.join(',')}]`
     document.querySelector('#python').innerHTML = code_template;
+    document.querySelector('#regions').value = code_template;
+    document.querySelector('#region_colors').value = color_template;
+
 
     var json_template = `
 {

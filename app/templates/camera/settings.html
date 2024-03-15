@@ -39,8 +39,8 @@
         <input type="checkbox" id="state" name="state" {% if camera.state %}checked{% endif %} class="form-check-input">
     </div>
 
-    <input type="hidden" id="line_points" name="line_points" value="{{ camera.get_line_points() | tojson }}">
-    <input type="hidden" id="polygon_points" name="polygon_points" value="{{ camera.get_polygon_points() | tojson }}">
+    <input type="hidden" id="regions" name="regions" value="{{ camera.get_regions() | tojson }}">
+    <input type="hidden" id="region_colors" name="region_colors" value="{{ camera.get_region_colors() | tojson }}">
 
     <div class="form-group mb-4">
         <label for="alert_emails">Alert Emails (JSON):</label>
