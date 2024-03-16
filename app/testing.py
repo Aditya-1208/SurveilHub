@@ -8,6 +8,7 @@ import queue
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 # from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from utils.surveillance_applications.intrusion.intrusion_application import IntrusionApplication
+from utils.surveillance_applications.intrusion.region_counter import *
 
 import re
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
