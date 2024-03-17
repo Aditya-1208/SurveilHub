@@ -13,9 +13,8 @@ from ultralytics.utils.plotting import Annotator, colors
 
 
 class RegionCounter:
-    def __init__(self, weights="yolov8n.pt", device="cpu", classes=None, line_thickness=2,
+    def __init__(self, device="cpu", classes=None, line_thickness=2,
                  region_thickness=2):
-        self.weights = weights
         self.device = device
         self.classes = classes
         self.names = None
@@ -26,29 +25,24 @@ class RegionCounter:
         self.region_thickness = region_thickness
         self.track_history = defaultdict(list)
         self.track_color = (0, 255, 0)
-        self.counting_regions = [
-            {
-                "name": "YOLOv8 Polygon Region",
-                "polygon": Polygon([(50, 80), (250, 20), (450, 80), (400, 350), (100, 350)]),  # Polygon points
-                "counts": 0,
-                "dragging": False,
-                "region_color": (255, 42, 4),  # BGR Value
-                "text_color": (255, 255, 255),  # Region Text Color
-            },
-            {
-                "name": "YOLOv8 Rectangle Region",
-                "polygon": Polygon([(200, 250), (440, 250), (440, 550), (200, 550)]),  # Polygon points
-                "counts": 0,
-                "dragging": False,
-                "region_color": (37, 255, 225),  # BGR Value
-                "text_color": (0, 0, 0),  # Region Text Color
-            },
-        ]
+        self.annotator = None
+        self.reg_pts = [(680, 257), (986, 125), (1174, 189), (930, 290)]
+        # self.counting_regions = [
+        #     {
+        #         "name": "YOLOv8 Rectangle Region",
+        #         "polygon": Polygon([(200, 250), (440, 250), (440, 550), (200, 550)]),  # Polygon points
+        #         "counts": 0,
+        #         "dragging": False,
+        #         "region_color": (37, 255, 225),  # BGR Value
+        #         "text_color": (0, 0, 0),  # Region Text Color
+        #     },
+        # ]
+        self.counting_regions = []
 
-    def set_args(self, classes_names, weights=None, device=None, classes=None, line_thickness=None,
-                 region_thickness=None, draw_tracks=False,track_color=(0, 255, 0),track_thickness=2):
-        if weights:
-            self.weights = weights
+    def set_args(self, classes_names, reg_pts, device=None, classes=None, line_thickness=None,
+                region_thickness=None, draw_tracks=False, track_color=(0, 255, 0), track_thickness=2,
+                ):
+
         if device:
             self.device = device
         if classes:
@@ -62,6 +56,18 @@ class RegionCounter:
         self.draw_tracks = draw_tracks
         self.track_color = track_color
         self.track_thickness = track_thickness
+        self.reg_pts = reg_pts
+        polygon = Polygon(reg_pts)
+        self.counting_regions.append({
+            "name": "YOLOv8 Rectangle Region",
+            "polygon": polygon,
+            "counts": 0,
+            "dragging": False,
+            "region_color": (37, 255, 225),  # Red color for custom regions
+            "text_color": (0, 0, 0),  # White text color for custom regions
+        })
+        print(f"Added polygon: {polygon}")
+
 
     def mouse_callback(self, event, x, y, flags, param):
         """
@@ -118,7 +124,6 @@ class RegionCounter:
         Regions can be Polygons or rectangle in shape
 
         Args:
-            weights (str): Model weights path.
             source (str): Video file path.
             device (str): processing device cpu, 0, 1
             view_img (bool): Show results.
@@ -133,10 +138,10 @@ class RegionCounter:
         track_ids = tracks[0].boxes.id.int().cpu().tolist()
         clss = tracks[0].boxes.cls.cpu().tolist()
 
-        annotator = Annotator(self.im0, line_width=self.line_thickness, example=str(self.names))
+        self.annotator = Annotator(self.im0, line_width=self.line_thickness, example=str(self.names))
 
         for box, track_id, cls in zip(boxes, track_ids, clss):
-            annotator.box_label(box, str(self.names[cls]), color=colors(cls, True))
+            self.annotator.box_label(box, str(self.names[cls]), color=colors(cls, True))
             bbox_center = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2  # Bbox center
 
             track = self.track_history[track_id]  # Tracking Lines plot
@@ -191,8 +196,9 @@ class RegionCounter:
 
 
     def start_counting(self, im0, tracks):
-
+        self.im0 = im0
         self.extract_and_process_tracks(tracks, im0)
+        return self.im0
 
 
 
