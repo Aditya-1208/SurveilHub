@@ -27,16 +27,6 @@ class RegionCounter:
         self.track_color = (0, 255, 0)
         self.annotator = None
         self.reg_pts = [(680, 257), (986, 125), (1174, 189), (930, 290)]
-        # self.counting_regions = [
-        #     {
-        #         "name": "YOLOv8 Rectangle Region",
-        #         "polygon": Polygon([(200, 250), (440, 250), (440, 550), (200, 550)]),  # Polygon points
-        #         "counts": 0,
-        #         "dragging": False,
-        #         "region_color": (37, 255, 225),  # BGR Value
-        #         "text_color": (0, 0, 0),  # Region Text Color
-        #     },
-        # ]
         self.counting_regions = []
 
     def set_args(self, classes_names, reg_pts, device=None, classes=None, line_thickness=None,
@@ -115,33 +105,27 @@ class RegionCounter:
             for region in self.counting_regions:
                 region["dragging"] = False
 
-    def extract_and_process_tracks(self, tracks, im0):
+    def extract_and_process_tracks(self, tracks, im0, view_img=True):
         """
         Run Region counting on a video using YOLOv8 and ByteTrack.
 
-        Supports movable region for real time counting inside specific area.
+        Supports movable region for real-time counting inside a specific area.
         Supports multiple regions counting.
-        Regions can be Polygons or rectangle in shape
+        Regions can be Polygons or rectangles in shape.
 
         Args:
-            source (str): Video file path.
-            device (str): processing device cpu, 0, 1
-            view_img (bool): Show results.
-            save_img (bool): Save results.
-            exist_ok (bool): Overwrite existing files.
-            classes (list): classes to detect and track
-            line_thickness (int): Bounding box thickness.
-            track_thickness (int): Tracking line thickness
-            region_thickness (int): Region thickness.
+            tracks: Tracks data.
+            im0: Input image frame.
+            view_img: Whether to display the image.
         """
         boxes = tracks[0].boxes.xyxy.cpu()
         track_ids = tracks[0].boxes.id.int().cpu().tolist()
         clss = tracks[0].boxes.cls.cpu().tolist()
 
-        self.annotator = Annotator(self.im0, line_width=self.line_thickness, example=str(self.names))
+        annotator = Annotator(im0, line_width=self.line_thickness, example=str(self.names))
 
         for box, track_id, cls in zip(boxes, track_ids, clss):
-            self.annotator.box_label(box, str(self.names[cls]), color=colors(cls, True))
+            annotator.box_label(box, str(self.names[cls]), color=colors(cls, True))
             bbox_center = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2  # Bbox center
 
             track = self.track_history[track_id]  # Tracking Lines plot
@@ -150,12 +134,12 @@ class RegionCounter:
                 track.pop(0)
 
             if self.draw_tracks:
-                self.annotator.draw_centroid_and_tracks(
+                annotator.draw_centroid_and_tracks(
                     track, color=self.track_color, track_thickness=self.track_thickness
                 )
 
             points = np.hstack(track).astype(np.int32).reshape((-1, 1, 2))
-            cv2.polylines(self.im0, [points], isClosed=False, color=colors(cls, True), thickness=self.track_thickness)
+            cv2.polylines(im0, [points], isClosed=False, color=colors(cls, True), thickness=self.track_thickness)
 
             # Check if detection inside region
             for region in self.counting_regions:
@@ -177,27 +161,37 @@ class RegionCounter:
             text_x = centroid_x - text_size[0] // 2
             text_y = centroid_y + text_size[1] // 2
             cv2.rectangle(
-                self.im0,
+                im0,
                 (text_x - 5, text_y - text_size[1] - 5),
                 (text_x + text_size[0] + 5, text_y + 5),
                 region_color,
                 -1,
             )
             cv2.putText(
-                self.im0, region_label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, region_text_color, self.line_thickness
+                im0, region_label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, region_text_color, self.line_thickness
             )
-            cv2.polylines(self.im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
+            cv2.polylines(im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
+
+        # if view_img:
+        #     cv2.imshow("Your Window Title", im0)
+        #     cv2.waitKey(0)
+        #     cv2.destroyAllWindows()
+
+        # for region in self.counting_regions:  # Reinitialize count for each region
+        #     region["counts"] = 0
+
+    def display_frames(self):
+        cv2.imshow("Your Window Title", self.im0)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            return
 
 
-
-        for region in self.counting_regions:  # Reinitialize count for each region
-            region["counts"] = 0
-
-
+        
 
     def start_counting(self, im0, tracks):
         self.im0 = im0
         self.extract_and_process_tracks(tracks, im0)
+        self.display_frames()
         return self.im0
 
 
