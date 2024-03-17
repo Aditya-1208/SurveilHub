@@ -18,7 +18,7 @@ FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 10
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
 # region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)],[(602, 530), (450, 434), (626, 308), (1106, 415)]]
-region_points=[(680, 257), (986, 125), (1174, 189), (930, 290)]
+region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
 line_points = [(10, 700), (2000, 1100)]
 
 def timestampExtraction(frame):

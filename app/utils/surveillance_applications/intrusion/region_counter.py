@@ -26,7 +26,7 @@ class RegionCounter:
         self.track_history = defaultdict(list)
         self.track_color = (0, 255, 0)
         self.annotator = None
-        self.reg_pts = [(680, 257), (986, 125), (1174, 189), (930, 290)]
+        self.reg_pts = None
         self.counting_regions = []
 
     def set_args(self, classes_names, reg_pts, device=None, classes=None, line_thickness=None,
@@ -47,16 +47,17 @@ class RegionCounter:
         self.track_color = track_color
         self.track_thickness = track_thickness
         self.reg_pts = reg_pts
-        polygon = Polygon(reg_pts)
-        self.counting_regions.append({
-            "name": "YOLOv8 Rectangle Region",
-            "polygon": polygon,
-            "counts": 0,
-            "dragging": False,
-            "region_color": (37, 255, 225),  # Red color for custom regions
-            "text_color": (0, 0, 0),  # White text color for custom regions
-        })
-        print(f"Added polygon: {polygon}")
+
+        for pts in reg_pts:
+            polygon = Polygon(pts)
+            self.counting_regions.append({
+                "polygon": polygon,
+                "counts": 0,
+                "dragging": False,
+                "region_color": (37, 255, 225),  # Red color for custom regions
+                "text_color": (0, 0, 0),  # White text color for custom regions
+            })
+            print(f"Added polygon: {polygon}")
 
 
     def mouse_callback(self, event, x, y, flags, param):
