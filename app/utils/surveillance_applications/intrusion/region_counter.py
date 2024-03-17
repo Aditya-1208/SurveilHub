@@ -53,58 +53,13 @@ class RegionCounter:
             self.counting_regions.append({
                 "polygon": polygon,
                 "counts": 0,
+                "tracked_ids": set(),
                 "dragging": False,
                 "region_color": (37, 255, 225),  # Red color for custom regions
                 "text_color": (0, 0, 0),  # White text color for custom regions
             })
             print(f"Added polygon: {polygon}")
 
-
-    def mouse_callback(self, event, x, y, flags, param):
-        """
-        Handles mouse events for region manipulation.
-
-        Parameters:
-            event (int): The mouse event type (e.g., cv2.EVENT_LBUTTONDOWN).
-            x (int): The x-coordinate of the mouse pointer.
-            y (int): The y-coordinate of the mouse pointer.
-            flags (int): Additional flags passed by OpenCV.
-            param: Additional parameters passed to the callback (not used in this function).
-
-        Global Variables:
-            current_region (dict): A dictionary representing the current selected region.
-
-        Mouse Events:
-            - LBUTTONDOWN: Initiates dragging for the region containing the clicked point.
-            - MOUSEMOVE: Moves the selected region if dragging is active.
-            - LBUTTONUP: Ends dragging for the selected region.
-
-        Notes:
-            - This function is intended to be used as a callback for OpenCV mouse events.
-            - Requires the existence of the 'counting_regions' list and the 'Polygon' class.
-
-        Example:
-            >>> cv2.setMouseCallback(window_name, mouse_callback)
-        """
-        if event == cv2.EVENT_LBUTTONDOWN:
-            for region in self.counting_regions:
-                if region["polygon"].contains(Point((x, y))):
-                    region["dragging"] = True
-                    region["offset_x"] = x
-                    region["offset_y"] = y
-        elif event == cv2.EVENT_MOUSEMOVE:
-            for region in self.counting_regions:
-                if region["dragging"]:
-                    dx = x - region["offset_x"]
-                    dy = y - region["offset_y"]
-                    region["polygon"] = Polygon(
-                        [(p[0] + dx, p[1] + dy) for p in region["polygon"].exterior.coords]
-                    )
-                    region["offset_x"] = x
-                    region["offset_y"] = y
-        elif event == cv2.EVENT_LBUTTONUP:
-            for region in self.counting_regions:
-                region["dragging"] = False
 
     def extract_and_process_tracks(self, tracks, im0, view_img=True):
         """
@@ -145,7 +100,9 @@ class RegionCounter:
             # Check if detection inside region
             for region in self.counting_regions:
                 if region["polygon"].contains(Point((bbox_center[0], bbox_center[1]))):
-                    region["counts"] += 1
+                    if track_id not in region["tracked_ids"]:
+                        region["counts"] += 1
+                        region["tracked_ids"].add(track_id)
 
         # Draw regions (Polygons/Rectangles)
         for region in self.counting_regions:
@@ -173,13 +130,6 @@ class RegionCounter:
             )
             cv2.polylines(im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
 
-        # if view_img:
-        #     cv2.imshow("Your Window Title", im0)
-        #     cv2.waitKey(0)
-        #     cv2.destroyAllWindows()
-
-        # for region in self.counting_regions:  # Reinitialize count for each region
-        #     region["counts"] = 0
 
     def display_frames(self):
         cv2.imshow("Your Window Title", self.im0)
@@ -192,7 +142,7 @@ class RegionCounter:
     def start_counting(self, im0, tracks):
         self.im0 = im0
         self.extract_and_process_tracks(tracks, im0)
-        self.display_frames()
+        # self.display_frames() Uncomment this fucnction to see the cv2 window
         return self.im0
 
 
