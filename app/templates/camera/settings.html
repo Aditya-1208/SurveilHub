@@ -49,7 +49,8 @@
             class="form-control">{{ camera.get_alert_emails() | join(', ') }}</textarea>
     </div>
     <div class="d-flex justify-content-end" style="gap: 1rem;">
-        <button class="btn btn-dark">Start Streaming and inference</button>
+        <a href="{{ url_for('start_stream', camera_id=camera.id) }}" class="btn btn-dark">Start Streaming and
+            inference</a>
         <button type="submit" class="btn btn-dark">Save details</button>
     </div>
 </form>

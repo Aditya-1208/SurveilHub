@@ -68,12 +68,6 @@ def create_app(config_class=Config):
         db.session.add(new_camera)
         db.session.commit()
         return redirect(url_for('home'))
-        # streaming_process = start_streaming(connection_url)
-        # inference_process = run_model_inference()
-        # camera_processes[new_camera.id] = (streaming_process,inference_process)
-        
-        # Redirect the user back to the main dashboard page
-        return redirect(url_for('home'))
     
     @app.route('/inference_output')
     def inference_output():
@@ -202,6 +196,17 @@ def create_app(config_class=Config):
     def fetch_camera_frame(camera_id):
         camera = Camera.query.get_or_404(camera_id)
         camera.capture_frame()
+        return redirect(url_for('view_camera', camera_id=camera.id))
+
+    @app.route('/camera/<int:camera_id>/start_stream', methods=['GET'])
+    def start_stream(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        if camera.id not in camera_processes:
+            streaming_process = start_streaming(camera.connection_url)
+            inference_process = run_model_inference()
+            camera_processes[camera.id] = (streaming_process,inference_process)
+            camera.state = True
+            db.session.commit()
         return redirect(url_for('view_camera', camera_id=camera.id))
 
     @app.route('/index')
