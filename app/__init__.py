@@ -1,10 +1,13 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory, Response
+from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory, Response,flash
 from dotenv import load_dotenv
 load_dotenv('.env')
+import os
 from config import Config
 from flask_migrate import Migrate
 from app.extensions import db
 from app.models.camera import Camera
+from werkzeug.utils import secure_filename
+from app.emailFunction import send_email_helper
 from app.models.object_detection import ObjectDetection
 # from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 # from utils.surveillance_applications.object_counter.counter_application import CounterApplication
@@ -18,12 +21,28 @@ camera_processes = {}
 line_points=[]
 
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
 
+    # Configure Flask-Mail with your email server details
+    app.config['MAIL_SERVER']= 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+    mail = Mail(app)
+
+    # Initialize Flask-Mail extension
+    mail = Mail(app)
+
+
     # app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\SurveilHub\\app\\Images'
+
 
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -212,11 +231,41 @@ def create_app(config_class=Config):
             db.session.commit()
         return redirect(url_for('view_camera', camera_id=camera.id))
 
+
+    @app.route('/send-email', methods=['GET', 'POST'])
+    def send_email():
+        if request.method == 'POST':
+            recipient = request.form.get('recipient')
+            subject = request.form.get('subject')
+            msg_body = request.form.get('msg_body')
+            image_file = request.files.get('image')
+
+            if image_file:
+                # Read image file content
+                image_filename = secure_filename(image_file.filename)
+                image_content = image_file.read()
+                image_attachment = (image_filename, image_file.content_type, image_content)
+            else:
+                image_attachment = None
+
+            # Call send_email function
+            send_email_helper(recipient, subject, msg_body, image=image_attachment)
+
+            return "Email sent successfully!"
+        else:
+            return render_template('sending_email.html')
+    
+
+    @app.route('/index')
+    def index():
+        return render_template('index.html')
+
     # @app.route('/index')
     # def index():
     #     return render_template('index.html')
+
     
     return app
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
