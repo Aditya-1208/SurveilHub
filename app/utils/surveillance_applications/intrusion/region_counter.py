@@ -55,8 +55,8 @@ class RegionCounter:
                 "counts": 0,
                 "tracked_ids": set(),
                 "dragging": False,
-                "region_color": (37, 255, 225),  # Red color for custom regions
-                "text_color": (0, 0, 0),  # White text color for custom regions
+                "region_color": (37, 255, 225),  
+                "text_color": (0, 0, 0),  
             })
             print(f"Added polygon: {polygon}")
 
@@ -84,7 +84,7 @@ class RegionCounter:
             annotator.box_label(box, str(self.names[cls]), color=colors(cls, True))
             bbox_center = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2  # Bbox center
 
-            track = self.track_history[track_id]  # Tracking Lines plot
+            track = self.track_history[track_id] 
             track.append((float(bbox_center[0]), float(bbox_center[1])))
             if len(track) > 30:
                 track.pop(0)
@@ -103,6 +103,8 @@ class RegionCounter:
                     if track_id not in region["tracked_ids"]:
                         region["counts"] += 1
                         region["tracked_ids"].add(track_id)
+
+                        return self.im0 #saving/returnning frame which had intrusion
 
         # Draw regions (Polygons/Rectangles)
         for region in self.counting_regions:

@@ -35,7 +35,7 @@ class ObjectCounter:
         self.annotator = None 
         self.annotator2 = None # Annotator
 
-        # Object counting Information
+
         self.in_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
         self.out_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
         self.counting_list = []
@@ -49,7 +49,6 @@ class ObjectCounter:
         self.draw_tracks = False
         self.track_color = (0, 255, 0)
 
-        # Check if environment support imshow
         self.env_check = check_imshow(warn=True)
 
     def set_args(
@@ -97,18 +96,9 @@ class ObjectCounter:
         self.track_thickness = track_thickness
         self.draw_tracks = draw_tracks
 
-        # Region and line selection
         if len(reg_pts) == 2:
             print("Line Counter Initiated.")
             self.reg_pts = reg_pts
-            self.counting_region = LineString(self.reg_pts)
-        elif len(reg_pts) == 4:
-            print("Region Counter Initiated.")
-            self.reg_pts = reg_pts
-            self.counting_region = Polygon(self.reg_pts)
-        else:
-            print("Invalid Region points provided, region_points can be 2 or 4")
-            print("Using Line Counter Now")
             self.counting_region = LineString(self.reg_pts)
 
         self.names = classes_names
@@ -120,37 +110,6 @@ class ObjectCounter:
         self.region_thickness = region_thickness
         self.line_dist_thresh = line_dist_thresh
 
-    def mouse_event_for_region(self, event, x, y, flags, params):
-        """
-        This function is designed to move region with mouse events in a real-time video stream.
-
-        Args:
-            event (int): The type of mouse event (e.g., cv2.EVENT_MOUSEMOVE, cv2.EVENT_LBUTTONDOWN, etc.).
-            x (int): The x-coordinate of the mouse pointer.
-            y (int): The y-coordinate of the mouse pointer.
-            flags (int): Any flags associated with the event (e.g., cv2.EVENT_FLAG_CTRLKEY,
-                cv2.EVENT_FLAG_SHIFTKEY, etc.).
-            params (dict): Additional parameters you may want to pass to the function.
-        """
-        if event == cv2.EVENT_LBUTTONDOWN:
-            for i, point in enumerate(self.reg_pts):
-                if (
-                    isinstance(point, (tuple, list))
-                    and len(point) >= 2
-                    and (abs(x - point[0]) < 10 and abs(y - point[1]) < 10)
-                ):
-                    self.selected_point = i
-                    self.is_drawing = True
-                    break
-
-        elif event == cv2.EVENT_MOUSEMOVE:
-            if self.is_drawing and self.selected_point is not None:
-                self.reg_pts[self.selected_point] = (x, y)
-                self.counting_region = Polygon(self.reg_pts)
-
-        elif event == cv2.EVENT_LBUTTONUP:
-            self.is_drawing = False
-            self.selected_point = None
 
     def extract_and_process_tracks(self, tracks):
         boxes = tracks[0].boxes.xyxy.cpu()
@@ -158,20 +117,17 @@ class ObjectCounter:
         track_ids = tracks[0].boxes.id.int().cpu().tolist()
 
         self.annotator = Annotator(self.im0, self.tf, self.names)
-        # self.annotator2 = Annotator2(self.im0, self.tf, self.names)
         self.annotator.draw_region(reg_pts=self.reg_pts, color=self.region_color, thickness=self.region_thickness)
 
         for box, track_id, cls in zip(boxes, track_ids, clss):
-            # Draw bounding box
+
             self.annotator.box_label(box, label=f"{track_id}:{self.names[cls]}", color=colors(int(cls), True))
 
-            # Draw Tracks
             track_line = self.track_history[track_id]
             track_line.append((float((box[0] + box[2]) / 2), float((box[1] + box[3]) / 2)))
             if len(track_line) > 30:
                 track_line.pop(0)
 
-            # Draw track trails
             if self.draw_tracks:
                 self.annotator.draw_centroid_and_tracks(
                     track_line, color=self.track_color, track_thickness=self.track_thickness
@@ -179,60 +135,35 @@ class ObjectCounter:
 
             prev_position = self.track_history[track_id][-2] if len(self.track_history[track_id]) > 1 else None
 
-            # Count objects per class
-            if len(self.reg_pts) == 4:
-                if (
-                    prev_position is not None
-                    and self.counting_region.contains(Point(track_line[-1]))
-                    and track_id not in self.counting_list
-                ):
-                    self.counting_list.append(track_id)
-                    # if (box[0] - prev_position[0]) > 0:
-                        # self.in_counts[cls] += 1
-                    # else:
-                        # self.out_counts[cls] += 1
-                    self.in_counts[cls] += 1
-            elif len(self.reg_pts) == 2:
+            if len(self.reg_pts) == 2:
                 if prev_position is not None:
                     distance = Point(track_line[-1]).distance(self.counting_region)
                     if distance < self.line_dist_thresh and track_id not in self.counting_list:
                         self.counting_list.append(track_id)
-                        # if (box[0] - prev_position[0]) > 0:
-                            # self.in_counts[cls] += 1
-                        # else:
-                            # self.out_counts[cls] += 1
                         self.in_counts[cls] += 1
 
-        # Construct class-wise count labels
-        incount_labels = ["In Count: "]
-        # outcount_labels = ["Out Count: "]
+        incount_labels = ["Count: "]
         for cls, count in self.in_counts.items():
             incount_labels.append(f"{self.names[cls]}: {count}|")
-        # for cls, count in self.out_counts.items():
-        #     outcount_labels.append(f"{self.names[cls]}: {count}|")
 
-        # Display counts labels on separate lines
+            # class name can be accessed by self.names[cls]
+            # class count can be accessed by count (under this for loop)
+            #this extract_and_process_tracks runs for each frame passed from start_counting function
+
+
+
         incount_str = ''.join(incount_labels)
-        # outcount_str = ''.join(outcount_labels)
         print(incount_str)
-        # print(outcount_str)  # Print outcount_str on the next line
 
-        # Display counts labels on the image
+
+
         if incount_str is not None:
             self.annotator.count_labels(
-                counts=incount_str,  # Append newline character here
-                count_txt_size=self.count_txt_thickness,  # Adjust text size here
+                counts=incount_str,  
+                count_txt_size=self.count_txt_thickness,  
                 txt_color=self.count_txt_color,
                 color=self.count_color,
             )
-
-        # if outcount_str is not None:
-        #     self.annotator2.count_labels(
-        #         counts=outcount_str,
-        #         count_txt_size=self.count_txt_thickness,  # Adjust text size here
-        #         txt_color=self.count_txt_color,
-        #         color=self.count_color,
-        #     )
 
 
 
@@ -240,7 +171,7 @@ class ObjectCounter:
         """Display frame."""
         if self.env_check:
             cv2.namedWindow("Ultralytics YOLOv8 Object Counter")
-            if len(self.reg_pts) == 4:  # only add mouse event If user drawn region
+            if len(self.reg_pts) == 4: 
                 cv2.setMouseCallback(
                     "Ultralytics YOLOv8 Object Counter", self.mouse_event_for_region, {"region_points": self.reg_pts}
                 )
@@ -257,7 +188,7 @@ class ObjectCounter:
             im0 (ndarray): Current frame from the video stream.
             tracks (list): List of tracks obtained from the object tracking process.
         """
-        self.im0 = im0  # store image
+        self.im0 = im0 
 
         if tracks[0].boxes.id is None:
             if self.view_img:

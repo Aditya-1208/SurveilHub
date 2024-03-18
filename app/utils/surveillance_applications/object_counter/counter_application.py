@@ -1,5 +1,5 @@
 from utils.surveillance_applications.base_application import BaseApplication
-from utils.surveillance_applications.object_counter.helper import *
+from utils.surveillance_applications.object_counter.line_counter import *
 
 class CounterApplication(BaseApplication):
     def __init__(self, inference_model, line_points):

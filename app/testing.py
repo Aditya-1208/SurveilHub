@@ -6,9 +6,8 @@ import threading
 import numpy as np
 import queue
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
-# from utils.surveillance_applications.object_counter.counter_application import CounterApplication
+from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from utils.surveillance_applications.intrusion.intrusion_application import IntrusionApplication
-from utils.surveillance_applications.intrusion.region_counter import *
 
 import re
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
@@ -33,7 +32,7 @@ def timestampExtraction(frame):
 def video_stream_gen(url):
     vid = cv2.VideoCapture(url)
     ml_model = YOLOModel()
-    # lineCounter = CounterApplication(ml_model, line_points)
+    lineCounter = CounterApplication(ml_model, line_points)
     intrusionDetection = IntrusionApplication(ml_model, region_points)
     try:
         def frame_processor():
@@ -47,9 +46,8 @@ def video_stream_gen(url):
         frame_processor_thread.start()
         while True:
             frame = frame_queue.get()
-            # line_frame = lineCounter.count(frame)
+            line_frame = lineCounter.count(frame)
             region_frame = intrusionDetection.count(frame)
-            # line_text = timestampExtraction(line_frame)
             region_text = timestampExtraction(region_frame)
             print(region_text)
 
