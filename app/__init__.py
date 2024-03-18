@@ -178,7 +178,7 @@ def create_app(config_class=Config):
         camera.state = bool(request.form.get('state'))
         camera.set_regions(request.form.get('regions'))
         camera.set_region_colors(request.form.get('region_colors'))
-        camera.set_alert_emails(request.form.get('alert_emails'))
+        camera.alert_emails = request.form.get('alert_emails')
         db.session.commit()
         return redirect(url_for('view_camera', camera_id=camera.id))
 

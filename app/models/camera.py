@@ -30,11 +30,8 @@ class Camera(db.Model):
     def get_region_colors(self):
         return json.loads(self.region_colors) if self.region_colors else []
 
-    def set_alert_emails(self, emails):
-        self.alert_emails = "[]" if not emails else json.dumps(emails)
-
     def get_alert_emails(self):
-        return json.loads(self.alert_emails) if self.alert_emails else []
+        return [element.strip() for element in self.alert_emails.split(',')] if self.alert_emails else []
 
     def capture_frame(self):
         # Open connection to camera

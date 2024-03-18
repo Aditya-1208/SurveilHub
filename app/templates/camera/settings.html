@@ -44,9 +44,9 @@
     <input type="hidden" id="region_colors" name="region_colors" value="{{ camera.get_region_colors() | tojson }}">
 
     <div class="form-group mb-4">
-        <label for="alert_emails">Alert Emails (JSON):</label>
+        <label for="alert_emails">Emails to be sent alert on (separate by commas):</label>
         <textarea id="alert_emails" name="alert_emails"
-            class="form-control">{{ camera.get_alert_emails() | tojson }}</textarea>
+            class="form-control">{{ camera.get_alert_emails() | join(', ') }}</textarea>
     </div>
     <div class="d-flex justify-content-end">
         <button type="submit" class="btn btn-dark">Submit</button>
