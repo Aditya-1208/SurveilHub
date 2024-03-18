@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Sidebar -->
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="{{ url_for('view_camera', camera_id=camera.id) }}"
+                class="list-group-item list-group-item-action {% if request.path == url_for('view_camera', camera_id=camera.id) %}active{% endif %}"
+                data-target="camera_settings">Camera and detection settings</a>
+            <a href="{{ url_for('view_object_detections', camera_id=camera.id) }}"
+                class="list-group-item list-group-item-action {% if request.path == url_for('view_object_detections', camera_id=camera.id) %}active{% endif %}"
+                data-target="object_detections">Object detections</a>
+            <a href="{{ url_for('view_intrusions', camera_id=camera.id) }}"
+                class="list-group-item list-group-item-action {% if request.path == url_for('view_intrusions', camera_id=camera.id) %}active{% endif %}"
+                data-target="intrusions">Intrusions</a>
+            <a href="{{ url_for('view_traffic_insights', camera_id=camera.id) }}"
+                class="list-group-item list-group-item-action {% if request.path == url_for('view_traffic_insights', camera_id=camera.id) %}active{% endif %}"
+                data-target="traffic_insights">Traffic Insights</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="col-md-9" id="main-content">
+        <!-- Content will be dynamically updated here -->
+        {% block main_content %}
+        {% endblock %}
+    </div>
+</div>
+
+<style>
+    .list-group-item.active {
+        background-color: #212529;
+        border-color: #212529;
+    }
+</style>
+{% endblock %}
