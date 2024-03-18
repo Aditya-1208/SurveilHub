@@ -36,8 +36,8 @@
     </div>
 
     <div class="form-group">
-        <label for="state">Run stream and inference:</label>
-        <input type="checkbox" id="state" name="state" {% if camera.state %}checked{% endif %} class="form-check-input">
+        <p class="mb-0">Stream and inference running : <span
+                class="text-{{'success' if camera.state else 'danger'}}">{{"Yes" if camera.state else "No"}}</span></p>
     </div>
 
     <input type="hidden" id="regions" name="regions" value="{{ camera.get_regions() | tojson }}">
@@ -48,8 +48,9 @@
         <textarea id="alert_emails" name="alert_emails"
             class="form-control">{{ camera.get_alert_emails() | join(', ') }}</textarea>
     </div>
-    <div class="d-flex justify-content-end">
-        <button type="submit" class="btn btn-dark">Submit</button>
+    <div class="d-flex justify-content-end" style="gap: 1rem;">
+        <button class="btn btn-dark">Start Streaming and inference</button>
+        <button type="submit" class="btn btn-dark">Save details</button>
     </div>
 </form>
 
