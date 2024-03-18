@@ -6,7 +6,7 @@
 {% block content %}
 
 <h1>Create new camera</h1>
-<form method="post" action="{{ url_for('create_camera') }}">
+<form method="post" action="{{ url_for('create_camera_post') }}">
     <div class="mb-3">
         <label for="name" class="form-label">Name:</label>
         <input type="text" id="name" name="name" class="form-control" required>
@@ -14,6 +14,10 @@
     <div class="mb-3">
         <label for="connection_url" class="form-label">Connection URL:</label>
         <input type="text" id="connection_url" name="connection_url" class="form-control" required>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description:</label>
+        <input type="text" id="description" name="description" class="form-control">
     </div>
     <button type="submit" class="btn btn-primary">Create Camera</button>
 </form>
