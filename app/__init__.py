@@ -203,7 +203,17 @@ def create_app(config_class=Config):
     @app.route('/camera/<int:camera_id>/object_detections', methods=['GET'])
     def view_object_detections(camera_id):
         camera = Camera.query.get_or_404(camera_id)
-        return render_template('camera/object_detections.html', camera=camera)
+        object_detections = ObjectDetection.query.filter_by(camera_id=camera_id).all()
+
+        class_counts = {}
+        for detection in object_detections:
+            predicted_class = detection.predicted_class
+            if predicted_class in class_counts:
+                class_counts[predicted_class] += 1
+            else:
+                class_counts[predicted_class] = 1
+        
+        return render_template('camera/object_detections.html', camera=camera, object_detections=object_detections, class_counts=class_counts)
 
     @app.route('/camera/<int:camera_id>/traffic_insights', methods=['GET'])
     def view_traffic_insights(camera_id):
