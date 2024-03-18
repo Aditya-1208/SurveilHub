@@ -46,10 +46,13 @@ def video_stream_gen(url):
         frame_processor_thread.start()
         while True:
             frame = frame_queue.get()
-            line_frame = lineCounter.count(frame)
-            region_frame = intrusionDetection.count(frame)
-            region_text = timestampExtraction(region_frame)
-            print(region_text)
+            object_class_name = lineCounter.count(frame)
+            intrusion_frame = intrusionDetection.count(frame)
+            if (intrusion_frame is not None):
+                region_text = timestampExtraction(intrusion_frame)
+                print(region_text)
+            if(object_class_name is not None):
+                print(object_class_name)
 
 
 

@@ -104,7 +104,8 @@ class RegionCounter:
                         region["counts"] += 1
                         region["tracked_ids"].add(track_id)
 
-                        return self.im0 #saving/returnning frame which had intrusion
+                        # return self.im0 #saving/returnning frame which had intrusion
+                        return True
 
         # Draw regions (Polygons/Rectangles)
         for region in self.counting_regions:
@@ -132,7 +133,7 @@ class RegionCounter:
             )
             cv2.polylines(im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
 
-
+        return False
     def display_frames(self):
         cv2.imshow("Your Window Title", self.im0)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -143,9 +144,12 @@ class RegionCounter:
 
     def start_counting(self, im0, tracks):
         self.im0 = im0
-        self.extract_and_process_tracks(tracks, im0)
+        # self.extract_and_process_tracks(tracks, im0)
         # self.display_frames() Uncomment this fucnction to see the cv2 window
-        return self.im0
+        # return self.im0
+        if self.extract_and_process_tracks(tracks, im0):
+            return self.im0
+        return None
 
 
 

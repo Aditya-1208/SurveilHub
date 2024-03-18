@@ -142,14 +142,13 @@ class ObjectCounter:
                         self.counting_list.append(track_id)
                         self.in_counts[cls] += 1
 
+                        #returning class name here
+
+                        return self.names[cls]
+
         incount_labels = ["Count: "]
         for cls, count in self.in_counts.items():
             incount_labels.append(f"{self.names[cls]}: {count}|")
-
-            # class name can be accessed by self.names[cls]
-            # class count can be accessed by count (under this for loop)
-            #this extract_and_process_tracks runs for each frame passed from start_counting function
-
 
 
         incount_str = ''.join(incount_labels)
@@ -165,7 +164,7 @@ class ObjectCounter:
                 color=self.count_color,
             )
 
-
+        return None
 
     def display_frames(self):
         """Display frame."""
@@ -190,12 +189,12 @@ class ObjectCounter:
         """
         self.im0 = im0 
 
-        if tracks[0].boxes.id is None:
-            if self.view_img:
-                self.display_frames()
-            return im0
-        self.extract_and_process_tracks(tracks)
+        # if tracks[0].boxes.id is None:
+        #     if self.view_img:
+        #         self.display_frames()
+        #     return im0
+        obj_name = self.extract_and_process_tracks(tracks)
 
-        if self.view_img:
-            self.display_frames()
-        return self.im0
+        # if self.view_img:
+        #     self.display_frames()
+        return obj_name
