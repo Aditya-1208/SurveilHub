@@ -143,26 +143,25 @@ class ObjectCounter:
                         self.in_counts[cls] += 1
 
                         #returning class name here
-
                         return self.names[cls]
 
-        incount_labels = ["Count: "]
-        for cls, count in self.in_counts.items():
-            incount_labels.append(f"{self.names[cls]}: {count}|")
+        # incount_labels = ["Count: "]
+        # for cls, count in self.in_counts.items():
+        #     incount_labels.append(f"{self.names[cls]}: {count}|")
 
 
-        incount_str = ''.join(incount_labels)
-        print(incount_str)
+        # incount_str = ''.join(incount_labels)
+        # print(incount_str)
 
 
 
-        if incount_str is not None:
-            self.annotator.count_labels(
-                counts=incount_str,  
-                count_txt_size=self.count_txt_thickness,  
-                txt_color=self.count_txt_color,
-                color=self.count_color,
-            )
+        # if incount_str is not None:
+        #     self.annotator.count_labels(
+        #         counts=incount_str,  
+        #         count_txt_size=self.count_txt_thickness,  
+        #         txt_color=self.count_txt_color,
+        #         color=self.count_color,
+        #     )
 
         return None
 
