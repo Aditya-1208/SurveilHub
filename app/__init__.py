@@ -1,4 +1,5 @@
 from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory, Response,flash
+from flask_mail import Mail
 from dotenv import load_dotenv
 load_dotenv('.env')
 import os
@@ -36,10 +37,6 @@ def create_app(config_class=Config):
     app.config['MAIL_USE_SSL'] = True
     app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
     mail = Mail(app)
-
-    # Initialize Flask-Mail extension
-    mail = Mail(app)
-
 
     # app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\SurveilHub\\app\\Images'
 
