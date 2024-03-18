@@ -12,7 +12,7 @@ from utils.surveillance_applications.intrusion.intrusion_application import Intr
 import re
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
-VIDEO_PATH = "http://localhost:8080/"
+# VIDEO_PATH = r"C:\Users\Prasanna P M\EC498_Major_Project\clip.mp4"
 FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 10
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
@@ -38,6 +38,9 @@ def video_stream_gen(url):
         def frame_processor():
             while True:
                 ret, frame = vid.read()
+                if not ret:
+                    print("Error reading frame from video stream")
+                    break
                 try:
                     frame_queue.put(frame, block=False)
                 except queue.Full:
@@ -48,10 +51,10 @@ def video_stream_gen(url):
             frame = frame_queue.get()
             object_class_name = lineCounter.count(frame)
             intrusion_frame = intrusionDetection.count(frame)
-            if (intrusion_frame is not None):
+            if intrusion_frame is not None:
                 region_text = timestampExtraction(intrusion_frame)
                 print(region_text)
-            if(object_class_name is not None):
+            if object_class_name is not None:
                 print(object_class_name)
 
 
@@ -62,6 +65,6 @@ def video_stream_gen(url):
         vid.release()
 
 if __name__ == '__main__':
-    video_stream_gen("http://localhost:8080/")
+    video_stream_gen("http://localhost:9000/")
 
 

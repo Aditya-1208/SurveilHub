@@ -1,11 +1,16 @@
+# Ultralytics YOLO 🚀, AGPL-3.0 license
+
+from collections import defaultdict
+
+import cv2
+
 from ultralytics.utils.checks import check_imshow, check_requirements
 from ultralytics.utils.plotting import Annotator, colors
-import cv2
-from collections import defaultdict
-from utils.surveillance_applications.object_counter.onscreen import Annotator2
+
 check_requirements("shapely>=2.0.0")
 
 from shapely.geometry import LineString, Point, Polygon
+
 
 class ObjectCounter:
     """A class to manage the counting of objects in a real-time video stream based on their tracks."""
@@ -18,7 +23,7 @@ class ObjectCounter:
         self.selected_point = None
 
         # Region & Line Information
-        self.reg_pts = [(1072, 568), (441, 426), (984, 161), (1279, 283)]
+        self.reg_pts = [(10, 700), (2000, 1100)]
         self.line_dist_thresh = 15
         self.counting_region = None
         self.region_color = (255, 0, 255)
@@ -32,13 +37,13 @@ class ObjectCounter:
         self.view_out_counts = True
 
         self.names = None  # Classes names
-        self.annotator = None 
-        self.annotator2 = None # Annotator
+        self.annotator = None  # Annotator
+        self.window_name = "Ultralytics YOLOv8 Object Counter"
 
-
-        self.in_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-        self.out_counts = {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0}
-        self.counting_list = []
+        # Object counting Information
+        self.in_counts = 0
+        self.out_counts = 0
+        self.counting_dict = {}
         self.count_txt_thickness = 0
         self.count_txt_color = (0, 0, 0)
         self.count_color = (255, 255, 255)
@@ -49,6 +54,7 @@ class ObjectCounter:
         self.draw_tracks = False
         self.track_color = (0, 255, 0)
 
+        # Check if environment support imshow
         self.env_check = check_imshow(warn=True)
 
     def set_args(
@@ -62,7 +68,7 @@ class ObjectCounter:
         view_in_counts=True,
         view_out_counts=True,
         draw_tracks=False,
-        count_txt_thickness=1,
+        count_txt_thickness=2,
         count_txt_color=(0, 0, 0),
         count_color=(255, 255, 255),
         track_color=(0, 255, 0),
@@ -96,10 +102,11 @@ class ObjectCounter:
         self.track_thickness = track_thickness
         self.draw_tracks = draw_tracks
 
-        if len(reg_pts) == 2:
-            print("Line Counter Initiated.")
-            self.reg_pts = reg_pts
-            self.counting_region = LineString(self.reg_pts)
+        # Region and line selection
+
+        self.reg_pts = reg_pts
+        self.counting_region = LineString(self.reg_pts)
+
 
         self.names = classes_names
         self.track_color = track_color
@@ -111,60 +118,61 @@ class ObjectCounter:
         self.line_dist_thresh = line_dist_thresh
 
 
+
     def extract_and_process_tracks(self, tracks):
-        boxes = tracks[0].boxes.xyxy.cpu()
-        clss = tracks[0].boxes.cls.cpu().tolist()
-        track_ids = tracks[0].boxes.id.int().cpu().tolist()
+        """Extracts and processes tracks for object counting in a video stream."""
 
+        # Annotator Init and region drawing
         self.annotator = Annotator(self.im0, self.tf, self.names)
-        self.annotator.draw_region(reg_pts=self.reg_pts, color=self.region_color, thickness=self.region_thickness)
 
-        for box, track_id, cls in zip(boxes, track_ids, clss):
+        if tracks[0].boxes.id is not None:
+            boxes = tracks[0].boxes.xyxy.cpu()
+            clss = tracks[0].boxes.cls.cpu().tolist()
+            track_ids = tracks[0].boxes.id.int().cpu().tolist()
 
-            self.annotator.box_label(box, label=f"{track_id}:{self.names[cls]}", color=colors(int(cls), True))
+            # Extract tracks
+            for box, track_id, cls in zip(boxes, track_ids, clss):
+                # Draw bounding box
+                self.annotator.box_label(box, label=f"{track_id}:{self.names[cls]}", color=colors(int(cls), True))
 
-            track_line = self.track_history[track_id]
-            track_line.append((float((box[0] + box[2]) / 2), float((box[1] + box[3]) / 2)))
-            if len(track_line) > 30:
-                track_line.pop(0)
+                # Draw Tracks
+                track_line = self.track_history[track_id]
+                track_line.append((float((box[0] + box[2]) / 2), float((box[1] + box[3]) / 2)))
+                if len(track_line) > 30:
+                    track_line.pop(0)
 
-            if self.draw_tracks:
-                self.annotator.draw_centroid_and_tracks(
-                    track_line, color=self.track_color, track_thickness=self.track_thickness
-                )
+                # Draw track trails
+                if self.draw_tracks:
+                    self.annotator.draw_centroid_and_tracks(
+                        track_line, color=self.track_color, track_thickness=self.track_thickness
+                    )
 
-            prev_position = self.track_history[track_id][-2] if len(self.track_history[track_id]) > 1 else None
+                prev_position = self.track_history[track_id][-2] if len(self.track_history[track_id]) > 1 else None
+                centroid = Point((box[:2] + box[2:]) / 2)
 
-            if len(self.reg_pts) == 2:
+
                 if prev_position is not None:
-                    distance = Point(track_line[-1]).distance(self.counting_region)
-                    if distance < self.line_dist_thresh and track_id not in self.counting_list:
-                        self.counting_list.append(track_id)
-                        self.in_counts[cls] += 1
+                    is_inside = (box[0] - prev_position[0]) * (
+                        self.counting_region.centroid.x - prev_position[0]
+                    ) > 0
+                    current_position = "in" if is_inside else "out"
 
-                        #returning class name here
-                        return self.names[cls]
-
-        # incount_labels = ["Count: "]
-        # for cls, count in self.in_counts.items():
-        #     incount_labels.append(f"{self.names[cls]}: {count}|")
-
-
-        # incount_str = ''.join(incount_labels)
-        # print(incount_str)
-
-
-
-        # if incount_str is not None:
-        #     self.annotator.count_labels(
-        #         counts=incount_str,  
-        #         count_txt_size=self.count_txt_thickness,  
-        #         txt_color=self.count_txt_color,
-        #         color=self.count_color,
-        #     )
+                    if self.counting_dict[track_id] != current_position and is_inside:
+                        self.in_counts += 1
+                        self.counting_dict[track_id] = "in"
+                        return "in", self.names[cls]
+                    elif self.counting_dict[track_id] != current_position and not is_inside:
+                        self.out_counts += 1
+                        self.counting_dict[track_id] = "out"
+                        return "out", self.names[cls]
+                    else:
+                        self.counting_dict[track_id] = current_position
+                        # return self.names[cls]
+                else:
+                    self.counting_dict[track_id] = None
 
         return None
-
+    
     def display_frames(self):
         """Display frame."""
         if self.env_check:
@@ -177,7 +185,7 @@ class ObjectCounter:
             # Break Window
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 return
-
+            
     def start_counting(self, im0, tracks):
         """
         Main function to start the object counting process.
@@ -186,13 +194,8 @@ class ObjectCounter:
             im0 (ndarray): Current frame from the video stream.
             tracks (list): List of tracks obtained from the object tracking process.
         """
-        self.im0 = im0 
-
-        # if tracks[0].boxes.id is None:
-        #     if self.view_img:
-        #         self.display_frames()
-        #     return im0
-        obj_name = self.extract_and_process_tracks(tracks)
+        self.im0 = im0  # store image
+        obj_name = self.extract_and_process_tracks(tracks)  # draw region even if no objects
 
         # if self.view_img:
         #     self.display_frames()
