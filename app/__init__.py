@@ -22,6 +22,9 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
+
+    # app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\SurveilHub\\app\\Images'
+
     db.init_app(app)
     migrate = Migrate(app, db)
 
@@ -116,58 +119,58 @@ def create_app(config_class=Config):
         print(line_points)
         return jsonify({'message': 'Coordinates received successfully'}), 201
     
-    @app.route('/video')
-    def video():
-        return Response(video_stream_gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    # @app.route('/video')
+    # def video():
+    #     return Response(video_stream_gen(), mimetype='multipart/x-mixed-replace; boundary=frame')
     
-    def video_stream_gen():
-        vid = cv2.VideoCapture(VIDEO_PATH)
-        if not vid.isOpened():
-            raise RuntimeError("Error opening video file")
+    # def video_stream_gen():
+        # vid = cv2.VideoCapture(VIDEO_PATH)
+        # if not vid.isOpened():
+        #     raise RuntimeError("Error opening video file")
 
-        ml_model = YOLOModel()
-        counter = CounterApplication(ml_model, line_points)
-
-
-        try:
-            def frame_processor():
-                while True:
-                    ret, frame = vid.read()
-                    if not ret:
-                        continue
-
-                    try:
-                        frame_queue.put(frame, block=False)
-                    except queue.Full:
-                        pass
-
-            frame_processor_thread = threading.Thread(target=frame_processor)
-            frame_processor_thread.start()
-
-            while True:
-                frame = frame_queue.get()
-                frame = counter.count(frame)
-                # video_writer.write(frame)
-
-                image = frame[35:89, 1431:1855]
-                retval, img = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
-                img = cv2.GaussianBlur(img, (11, 11), 0)
-                img = cv2.medianBlur(img, 9)
-                pil_image = Image.fromarray(img)
-                text = pytesseract.image_to_string(pil_image, config=r'--psm 7 --oem 3 -l eng -c tessedit_char_whitelist=0123456789')
-                print(text)
+        # ml_model = YOLOModel()
+        # counter = CounterApplication(ml_model, line_points)
 
 
-                _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
-                frame_bytes = buffer.tobytes()
+        # try:
+        #     def frame_processor():
+        #         while True:
+        #             ret, frame = vid.read()
+        #             if not ret:
+        #                 continue
 
-                yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+        #             try:
+        #                 frame_queue.put(frame, block=False)
+        #             except queue.Full:
+        #                 pass
+
+        #     frame_processor_thread = threading.Thread(target=frame_processor)
+        #     frame_processor_thread.start()
+
+        #     while True:
+        #         frame = frame_queue.get()
+        #         frame = counter.count(frame)
+        #         # video_writer.write(frame)
+
+        #         image = frame[35:89, 1431:1855]
+        #         retval, img = cv2.threshold(image, 225, 255, cv2.THRESH_BINARY)
+        #         img = cv2.GaussianBlur(img, (11, 11), 0)
+        #         img = cv2.medianBlur(img, 9)
+        #         pil_image = Image.fromarray(img)
+        #         text = pytesseract.image_to_string(pil_image, config=r'--psm 7 --oem 3 -l eng -c tessedit_char_whitelist=0123456789')
+        #         print(text)
+
+
+        #         _, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+        #         frame_bytes = buffer.tobytes()
+
+        #         yield (b'--frame\r\n'
+        #             b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
             
-        except Exception as e:
-            print(f"Error in video thread: {e}")
-        finally:
-            vid.release()
+        # except Exception as e:
+        #     print(f"Error in video thread: {e}")
+        # finally:
+        #     vid.release()
 
     @app.route('/camera/<int:camera_id>')
     def view_camera(camera_id):
@@ -178,9 +181,9 @@ def create_app(config_class=Config):
         # You might need to adjust this depending on how index.html uses the camera's details
         return render_template('index.html', camera=camera)
 
-    @app.route('/index')
-    def index():
-        return render_template('index.html')
+    # @app.route('/index')
+    # def index():
+    #     return render_template('index.html')
     
     return app
 
