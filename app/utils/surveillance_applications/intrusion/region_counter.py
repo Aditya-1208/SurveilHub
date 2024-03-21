@@ -103,37 +103,39 @@ class RegionCounter:
                     if track_id not in region["tracked_ids"]:
                         region["counts"] += 1
                         region["tracked_ids"].add(track_id)
-
                         # return self.im0 #saving/returnning frame which had intrusion
+
                         return True
 
         # Draw regions (Polygons/Rectangles)
-        for region in self.counting_regions:
-            region_label = str(region["counts"])
-            region_color = region["region_color"]
-            region_text_color = region["text_color"]
+        # for region in self.counting_regions:
+        #     region_label = str(region["counts"])
+        #     region_color = region["region_color"]
+        #     region_text_color = region["text_color"]
 
-            polygon_coords = np.array(region["polygon"].exterior.coords, dtype=np.int32)
-            centroid_x, centroid_y = int(region["polygon"].centroid.x), int(region["polygon"].centroid.y)
+        #     polygon_coords = np.array(region["polygon"].exterior.coords, dtype=np.int32)
+        #     centroid_x, centroid_y = int(region["polygon"].centroid.x), int(region["polygon"].centroid.y)
 
-            text_size, _ = cv2.getTextSize(
-                region_label, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.7, thickness=self.line_thickness
-            )
-            text_x = centroid_x - text_size[0] // 2
-            text_y = centroid_y + text_size[1] // 2
-            cv2.rectangle(
-                im0,
-                (text_x - 5, text_y - text_size[1] - 5),
-                (text_x + text_size[0] + 5, text_y + 5),
-                region_color,
-                -1,
-            )
-            cv2.putText(
-                im0, region_label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, region_text_color, self.line_thickness
-            )
-            cv2.polylines(im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
+        #     text_size, _ = cv2.getTextSize(
+        #         region_label, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.7, thickness=self.line_thickness
+        #     )
+        #     text_x = centroid_x - text_size[0] // 2
+        #     text_y = centroid_y + text_size[1] // 2
+        #     cv2.rectangle(
+        #         im0,
+        #         (text_x - 5, text_y - text_size[1] - 5),
+        #         (text_x + text_size[0] + 5, text_y + 5),
+        #         region_color,
+        #         -1,
+        #     )
+        #     cv2.putText(
+        #         im0, region_label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, region_text_color, self.line_thickness
+        #     )
+        #     cv2.polylines(im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
 
         return False
+    
+
     def display_frames(self):
         cv2.imshow("Your Window Title", self.im0)
         if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -145,10 +147,37 @@ class RegionCounter:
     def start_counting(self, im0, tracks):
         self.im0 = im0
         # self.extract_and_process_tracks(tracks, im0)
-        # self.display_frames() Uncomment this fucnction to see the cv2 window
+        # self.display_frames() 
+        # Uncomment this fucnction to see the cv2 window
         # return self.im0
         if self.extract_and_process_tracks(tracks, im0):
+            for region in self.counting_regions:
+                region_label = str(region["counts"])
+                region_color = region["region_color"]
+                region_text_color = region["text_color"]
+
+                polygon_coords = np.array(region["polygon"].exterior.coords, dtype=np.int32)
+                centroid_x, centroid_y = int(region["polygon"].centroid.x), int(region["polygon"].centroid.y)
+
+                text_size, _ = cv2.getTextSize(
+                    region_label, cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.7, thickness=self.line_thickness
+                )
+                text_x = centroid_x - text_size[0] // 2
+                text_y = centroid_y + text_size[1] // 2
+                cv2.rectangle(
+                    self.im0,
+                    (text_x - 5, text_y - text_size[1] - 5),
+                    (text_x + text_size[0] + 5, text_y + 5),
+                    region_color,
+                    -1,
+                )
+                cv2.putText(
+                    self.im0, region_label, (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX, 0.7, region_text_color, self.line_thickness
+                )
+                cv2.polylines(self.im0, [polygon_coords], isClosed=True, color=region_color, thickness=self.region_thickness)
+
             return self.im0
+        
         return None
 
 
