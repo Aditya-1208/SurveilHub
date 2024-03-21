@@ -21,6 +21,7 @@ FRAME_QUEUE_SIZE = 30
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
 region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
 line_points = [(10, 700), (2000, 1100)]
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 
 def timestampExtraction(frame):
@@ -33,7 +34,6 @@ def timestampExtraction(frame):
     return text
 
 def video_stream_gen(url, camera_id):
-    app = create_app();
     vid = cv2.VideoCapture(url)
     ml_model = YOLOModel()
     lineCounter = CounterApplication(ml_model, line_points)
@@ -62,7 +62,7 @@ def video_stream_gen(url, camera_id):
                 save_path = os.path.join(os.path.dirname(__file__),'static', 'camera','intrusions', f'{unique_filename}.jpg')
                 cv2.imwrite(save_path, intrusion_frame)
                 data = {
-                    "recipients": ["adityaagr012@gmail.com"],
+                    "recipients": ["adityaagr012@gmail.com", "prasannapm416@gmail.com"],
                     "subject": "Instrusion detected",
                     "msg_body": "An intrusion has been detected in your defined region!",
                     "image": save_path
@@ -70,15 +70,15 @@ def video_stream_gen(url, camera_id):
                 # send_email_helper("An intrusion has been detected in your defined region!",image=save_path)
                 requests.post("http://localhost:5000/send-email", json = data)
 
-            if object_class_name is not None:
-                print(object_class_name)
-                line_text = timestampExtraction(frame).strip()
-                datetime_object = datetime.strptime(line_text, "%Y%m%d%H%M%S")
-                with app.app_context():
-                    # db.create_all()
-                    new_detection = ObjectDetection(predicted_class=object_class_name[1], timestamp=datetime_object, additional_info=object_class_name[0], camera_id=camera_id)
-                    db.session.add(new_detection)
-                    db.session.commit()
+            # if object_class_name is not None:
+            #     print(object_class_name)
+            #     line_text = timestampExtraction(frame).strip()
+            #     datetime_object = datetime.strptime(line_text, "%Y%m%d%H%M%S")
+            #     with app.app_context():
+            #         # db.create_all()
+            #         new_detection = ObjectDetection(predicted_class=object_class_name[1], timestamp=datetime_object, additional_info=object_class_name[0], camera_id=camera_id)
+            #         db.session.add(new_detection)
+            #         db.session.commit()
         
 
 
