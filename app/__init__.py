@@ -8,7 +8,7 @@ from flask_migrate import Migrate
 from app.extensions import db
 from app.models.camera import Camera
 from werkzeug.utils import secure_filename
-from app.emailFunction import send_email_helper
+from app.utils.emailFunction import send_email_helper
 from app.models.object_detection import ObjectDetection
 # from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 # from utils.surveillance_applications.object_counter.counter_application import CounterApplication
@@ -242,18 +242,17 @@ def create_app(config_class=Config):
     @app.route('/send-email', methods=['GET', 'POST'])
     def send_email():
         if request.method == 'POST':
-            recipient = request.form.get('recipient')
-            subject = request.form.get('subject')
-            msg_body = request.form.get('msg_body')
-            image_file = request.files.get('image')
+            recipient = request.json.get('recipient')
+            subject = request.json.get('subject')
+            msg_body = request.json.get('msg_body')
+            image_path = request.json.get('image')
 
-            if image_file:
-                # Read image file content
-                image_filename = secure_filename(image_file.filename)
-                image_content = image_file.read()
-                image_attachment = (image_filename, image_file.content_type, image_content)
-            else:
-                image_attachment = None
+            image_attachment = None
+            if image_path:
+                # Assuming the image path is provided
+                with open(image_path, 'rb') as image_file:
+                    image_content = image_file.read()
+                    image_attachment = ('image.jpg', 'image/jpeg', image_content)
 
             # Call send_email function
             send_email_helper(recipient, subject, msg_body, image=image_attachment)
