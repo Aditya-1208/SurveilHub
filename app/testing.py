@@ -4,21 +4,31 @@ import cv2
 import os
 import threading
 import numpy as np
+import argparse
 import queue
+from datetime import datetime
+from dotenv import load_dotenv
+load_dotenv('.env')
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from utils.surveillance_applications.intrusion.intrusion_application import IntrusionApplication
-
+# from config import Config
+# from flask_migrate import Migrate
+from app import create_app
+from extensions import db
+from models.camera import Camera
+from models.object_detection import ObjectDetection
+from flask import Flask, current_app
 import re
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 # VIDEO_PATH = r"C:\Users\Prasanna P M\EC498_Major_Project\clip.mp4"
 FRAME_WIDTH = 400
-FRAME_QUEUE_SIZE = 10
+FRAME_QUEUE_SIZE = 30
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
-# region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)],[(602, 530), (450, 434), (626, 308), (1106, 415)]]
 region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
 line_points = [(10, 700), (2000, 1100)]
+
 
 def timestampExtraction(frame):
     image = frame[35:89, 1431:1855]
@@ -29,7 +39,8 @@ def timestampExtraction(frame):
     text = pytesseract.image_to_string(pil_image, config=r'--psm 7 --oem 3 -l eng -c tessedit_char_whitelist=0123456789')
     return text
 
-def video_stream_gen(url):
+def video_stream_gen(url, camera_id):
+    app = create_app();
     vid = cv2.VideoCapture(url)
     ml_model = YOLOModel()
     lineCounter = CounterApplication(ml_model, line_points)
@@ -40,7 +51,6 @@ def video_stream_gen(url):
                 ret, frame = vid.read()
                 if not ret:
                     print("Error reading frame from video stream")
-                    break
                 try:
                     frame_queue.put(frame, block=False)
                 except queue.Full:
@@ -51,11 +61,19 @@ def video_stream_gen(url):
             frame = frame_queue.get()
             object_class_name = lineCounter.count(frame)
             intrusion_frame = intrusionDetection.count(frame)
-            if intrusion_frame is not None:
-                region_text = timestampExtraction(intrusion_frame)
-                print(region_text)
+            # if intrusion_frame is not None:
+                
+    
             if object_class_name is not None:
                 print(object_class_name)
+                line_text = timestampExtraction(frame).strip()
+                datetime_object = datetime.strptime(line_text, "%Y%m%d%H%M%S")
+                with app.app_context():
+                    # db.create_all()
+                    new_detection = ObjectDetection(predicted_class=object_class_name[1], timestamp=datetime_object, additional_info=object_class_name[0], camera_id=camera_id)
+                    db.session.add(new_detection)
+                    db.session.commit()
+        
 
 
 
@@ -65,6 +83,13 @@ def video_stream_gen(url):
         vid.release()
 
 if __name__ == '__main__':
-    video_stream_gen("http://localhost:9000/")
+
+    parser = argparse.ArgumentParser(description='Process video stream with object detection.')
+    parser.add_argument('--camera_id', type=int, help='Camera ID', required=True)
+    args = parser.parse_args()
+    camera_id = args.camera_id
+
+    # Start the video stream processing in the main thread
+    video_stream_gen("http://localhost:9000/", camera_id)
 
 
