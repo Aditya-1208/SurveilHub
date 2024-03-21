@@ -1,0 +1,58 @@
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Draw points to create polygon coordinates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <main>
+                    <!-- <link rel="stylesheet" href="/static/camera/style.css"> -->
+                    <div class="d-flex flex-column align-items-center">
+                        <div>
+                            <p class="show_normalized" id="coords" style="display: none;">x: <span id="x"></span> | y:
+                                <span id="y"></span>
+                            </p>
+                            <canvas id="canvas" class="image-fluid"></canvas>
+                            <div class="mt-2 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <p id="mode" class="mb-0">Mode: Polygon (Press <kbd>L</kbd> to switch to Line
+                                        drawing mode)</p>
+                                </div>
+                                <div>
+                                    <a href="" id="clear" class="widgetButton btn btn-dark">Clear Polygons</a>
+                                    <a href="#" id="saveChanges" class="btn btn-dark">Save changes</a>
+                                    <!-- <a href="" id="saveImage" class="widgetButton">Save Image</a> -->
+                                </div>
+                            </div>
+                        </div>
+                        <!-- <div>
+                            <h2>NumPy Points</h2>
+                            <p>Copy the points below into your Python code.</p>
+                            <a href="" id="clipboard" class="widgetButton">Copy Python to Clipboard</a>
+                            <pre id="python">
+                                        <code>
+                                        </code>
+                                    </pre>
+                            <div class="show_normalized" style="margin-bottom: 25px;">
+                                <label for="normalize_checkbox">Show Normalized Points from 0-1</label>
+                                <input type="checkbox" id="normalize_checkbox" name="normalize_checkbox"
+                                    value="normalize_checkbox">
+                            </div>
+                            <details>
+                                <summary>View JSON Points</summary>
+                                <h2>JSON Points</h2>
+                                <a href="" id="clipboardJSON" class="widgetButton">Copy JSON to Clipboard</a>
+                                <pre id="json">
+                                            <code>
+                                            </code>
+                                        </pre>
+                            </details>
+                        </div> -->
+                    </div>
+                    <script src="/static/camera/script.js"></script>
+                </main>
+            </div>
+        </div>
+    </div>
+</div>

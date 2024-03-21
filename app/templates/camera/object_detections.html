@@ -1,0 +1,32 @@
+{% extends 'camera_index.html' %}
+
+{% block main_content %}
+<h3>
+    Objects detected
+</h3>
+<div class="row">
+    {% for class_name, count in class_counts.items() %}
+    <div class="col-3 border">
+        {{ class_name }}: {{ count }}
+    </div>
+    {% endfor %}
+</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Predicted Class</th>
+            <th>Timestamp</th>
+            <th>Additional Info</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detection in object_detections %}
+        <tr>
+            <td>{{ detection['predicted_class'] }}</td>
+            <td>{{ detection['timestamp'] }}</td>
+            <td>{{ detection['additional_info'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

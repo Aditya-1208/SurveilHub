@@ -1,10 +1,14 @@
-from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory, Response
+from flask import Flask, render_template, jsonify, request, redirect, url_for, send_from_directory, Response,flash
+from flask_mail import Mail
 from dotenv import load_dotenv
 load_dotenv('.env')
+import os
 from config import Config
 from flask_migrate import Migrate
 from app.extensions import db
 from app.models.camera import Camera
+from werkzeug.utils import secure_filename
+from app.utils.emailFunction import send_email_helper
 from app.models.object_detection import ObjectDetection
 # from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 # from utils.surveillance_applications.object_counter.counter_application import CounterApplication
@@ -18,12 +22,24 @@ camera_processes = {}
 line_points=[]
 
 
+
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
 
+    # Configure Flask-Mail with your email server details
+    app.config['MAIL_SERVER']= 'smtp.gmail.com'
+    app.config['MAIL_PORT'] = 465
+    app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
+    app.config['MAIL_USE_TLS'] = False
+    app.config['MAIL_USE_SSL'] = True
+    app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
+    mail = Mail(app)
+
     # app.config['UPLOAD_FOLDER'] = 'C:\\Users\\Prasanna P M\\EC498_Major_Project\\SurveilHub\\app\\Images'
+
 
     db.init_app(app)
     migrate = Migrate(app, db)
@@ -31,19 +47,11 @@ def create_app(config_class=Config):
     @app.route('/')
     def home():
         cameras = Camera.query.all()
-        cameras_data = [{'id': camera.id, 'name': camera.name, 'connection_url': camera.connection_url} for camera in cameras]
-        return render_template('main_dashboard.html',cameras=cameras_data)
+        return render_template('main_dashboard.html',cameras=cameras)
 
     # Route to create a new camera
-    @app.route('/cameras', methods=['GET','POST'])
+    @app.route('/cameras', methods=['GET'])
     def create_camera():
-        if request.method == 'POST':
-            name = request.form['name']
-            connection_url = request.form['connection_url']
-            new_camera = Camera(name=name, connection_url=connection_url)
-            db.session.add(new_camera)
-            db.session.commit()
-            return redirect(url_for('home'))
         return render_template('create_camera.html')
     
     @app.route('/create-camera', methods=['GET'])
@@ -74,17 +82,10 @@ def create_app(config_class=Config):
     def create_camera_post():
         name = request.form['name']
         connection_url = request.form['connection_url']
-        
-        # Create a new camera object and add it to the database
-        new_camera = Camera(name=name, connection_url=connection_url)
+        description = request.form['description']
+        new_camera = Camera(name=name, connection_url=connection_url, description=description)
         db.session.add(new_camera)
         db.session.commit()
-
-        streaming_process = start_streaming(connection_url)
-        inference_process = run_model_inference()
-        camera_processes[new_camera.id] = (streaming_process,inference_process)
-        
-        # Redirect the user back to the main dashboard page
         return redirect(url_for('home'))
     
     @app.route('/inference_output')
@@ -179,13 +180,98 @@ def create_app(config_class=Config):
         
         # Now, render the index.html page with the camera's details
         # You might need to adjust this depending on how index.html uses the camera's details
-        return render_template('index.html', camera=camera)
+        return render_template('camera/settings.html', camera=camera)
+
+    @app.route('/update_camera/<int:camera_id>', methods=['POST'])
+    def update_camera(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        camera.name = request.form['name']
+        camera.connection_url = request.form['connection_url']
+        camera.description = request.form['description']
+        camera.state = bool(request.form.get('state'))
+        camera.set_regions(request.form.get('regions'))
+        camera.set_region_colors(request.form.get('region_colors'))
+        camera.alert_emails = request.form.get('alert_emails')
+        db.session.commit()
+        return redirect(url_for('view_camera', camera_id=camera.id))
+
+    @app.route('/camera/<int:camera_id>/intrusions', methods=['GET'])
+    def view_intrusions(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        return render_template('camera/intrusions.html', camera=camera)
+        
+    @app.route('/camera/<int:camera_id>/object_detections', methods=['GET'])
+    def view_object_detections(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        object_detections = ObjectDetection.query.filter_by(camera_id=camera_id).all()
+
+        class_counts = {}
+        for detection in object_detections:
+            predicted_class = detection.predicted_class
+            if predicted_class in class_counts:
+                class_counts[predicted_class] += 1
+            else:
+                class_counts[predicted_class] = 1
+        
+        return render_template('camera/object_detections.html', camera=camera, object_detections=object_detections, class_counts=class_counts)
+
+    @app.route('/camera/<int:camera_id>/traffic_insights', methods=['GET'])
+    def view_traffic_insights(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        return render_template('camera/traffic_insights.html', camera=camera)
+    
+
+    @app.route('/camera/<int:camera_id>/fetch_frame', methods=['GET'])
+    def fetch_camera_frame(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        camera.capture_frame()
+        return redirect(url_for('view_camera', camera_id=camera.id))
+
+    @app.route('/camera/<int:camera_id>/start_stream', methods=['GET'])
+    def start_stream(camera_id):
+        camera = Camera.query.get_or_404(camera_id)
+        if camera.id not in camera_processes:
+            streaming_process = start_streaming(camera.connection_url)
+            inference_process = run_model_inference()
+            camera_processes[camera.id] = (streaming_process,inference_process)
+            camera.state = True
+            db.session.commit()
+        return redirect(url_for('view_camera', camera_id=camera.id))
+
+
+    @app.route('/send-email', methods=['GET', 'POST'])
+    def send_email():
+        if request.method == 'POST':
+            recipients = request.json.get('recipients')
+            subject = request.json.get('subject')
+            msg_body = request.json.get('msg_body')
+            image_path = request.json.get('image')
+
+            image_attachment = None
+            if image_path:
+                # Assuming the image path is provided
+                with open(image_path, 'rb') as image_file:
+                    image_content = image_file.read()
+                    image_attachment = ('image.jpg', 'image/jpeg', image_content)
+
+            # Call send_email function
+            send_email_helper(recipients, subject, msg_body, image=image_attachment)
+
+            return "Email sent successfully!"
+        else:
+            return render_template('sending_email.html')
+    
+
+    @app.route('/index')
+    def index():
+        return render_template('index.html')
 
     # @app.route('/index')
     # def index():
     #     return render_template('index.html')
+
     
     return app
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)

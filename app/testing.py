@@ -12,16 +12,9 @@ load_dotenv('.env')
 from utils.predictive_models.yolo_model.yolo_model import YOLOModel
 from utils.surveillance_applications.object_counter.counter_application import CounterApplication
 from utils.surveillance_applications.intrusion.intrusion_application import IntrusionApplication
-# from config import Config
-# from flask_migrate import Migrate
-from app import create_app
-from extensions import db
-from models.camera import Camera
-from models.object_detection import ObjectDetection
-from flask import Flask, current_app
+import uuid
+import requests
 import re
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
-
 # VIDEO_PATH = r"C:\Users\Prasanna P M\EC498_Major_Project\clip.mp4"
 FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 30
@@ -61,9 +54,22 @@ def video_stream_gen(url, camera_id):
             frame = frame_queue.get()
             object_class_name = lineCounter.count(frame)
             intrusion_frame = intrusionDetection.count(frame)
-            # if intrusion_frame is not None:
-                
-    
+
+            if intrusion_frame is not None:
+                region_text = timestampExtraction(intrusion_frame)
+                print(region_text)
+                unique_filename = str(uuid.uuid4())
+                save_path = os.path.join(os.path.dirname(__file__),'static', 'camera','intrusions', f'{unique_filename}.jpg')
+                cv2.imwrite(save_path, intrusion_frame)
+                data = {
+                    "recipients": ["adityaagr012@gmail.com"],
+                    "subject": "Instrusion detected",
+                    "msg_body": "An intrusion has been detected in your defined region!",
+                    "image": save_path
+                }
+                # send_email_helper("An intrusion has been detected in your defined region!",image=save_path)
+                requests.post("http://localhost:5000/send-email", json = data)
+
             if object_class_name is not None:
                 print(object_class_name)
                 line_text = timestampExtraction(frame).strip()

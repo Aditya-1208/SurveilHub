@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send Email</title>
+</head>
+<body>
+    <h1>Send Email</h1>
+    <form action="/send-email" method="post" enctype="multipart/form-data">
+        <label for="recipient">Recipient Email:</label>
+        <input type="email" id="recipient" name="recipient" required><br><br>
+        
+        <label for="subject">Subject:</label>
+        <input type="text" id="subject" name="subject" required><br><br>
+
+        <label for="msg_body">Message Body:</label><br>
+        <textarea id="msg_body" name="msg_body" rows="4" cols="50" required></textarea><br><br>
+
+        <label for="image_file">Image File:</label>
+        <input type="file" id="image_file" name="image_file" accept="image/*" required><br><br>
+
+        <input type="submit" value="Send Email">
+    </form>
+</body>
+</html>
