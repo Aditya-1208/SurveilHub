@@ -1,6 +1,6 @@
 from flask_mail import Message, Mail
 
-def send_email_helper(recipient, subject, msg_body, image=None):
+def send_email_helper(recipients, subject, msg_body, image=None):
     """
     Helper function to send an email using Flask-Mail.
     
@@ -12,7 +12,7 @@ def send_email_helper(recipient, subject, msg_body, image=None):
     """
     mail = Mail()
 
-    msg = Message(subject=subject, recipients=[recipient])
+    msg = Message(subject=subject, recipients=recipients)
     msg.body = msg_body
 
     if image:
