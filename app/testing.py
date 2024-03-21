@@ -58,7 +58,7 @@ def video_stream_gen(url):
                 save_path = os.path.join(os.path.dirname(__file__),'static', 'camera','intrusions', f'{unique_filename}.jpg')
                 cv2.imwrite(save_path, intrusion_frame)
                 data = {
-                    "recipient": "adityaagr012@gmail.com",
+                    "recipients": ["adityaagr012@gmail.com"],
                     "subject": "Instrusion detected",
                     "msg_body": "An intrusion has been detected in your defined region!",
                     "image": save_path

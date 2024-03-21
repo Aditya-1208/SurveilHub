@@ -242,7 +242,7 @@ def create_app(config_class=Config):
     @app.route('/send-email', methods=['GET', 'POST'])
     def send_email():
         if request.method == 'POST':
-            recipient = request.json.get('recipient')
+            recipients = request.json.get('recipients')
             subject = request.json.get('subject')
             msg_body = request.json.get('msg_body')
             image_path = request.json.get('image')
@@ -255,7 +255,7 @@ def create_app(config_class=Config):
                     image_attachment = ('image.jpg', 'image/jpeg', image_content)
 
             # Call send_email function
-            send_email_helper(recipient, subject, msg_body, image=image_attachment)
+            send_email_helper(recipients, subject, msg_body, image=image_attachment)
 
             return "Email sent successfully!"
         else:
