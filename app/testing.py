@@ -69,20 +69,6 @@ def video_stream_gen(url, camera_id):
                 }
                 # send_email_helper("An intrusion has been detected in your defined region!",image=save_path)
                 requests.post("http://localhost:5000/send-email", json = data)
-
-            # if object_class_name is not None:
-            #     print(object_class_name)
-            #     line_text = timestampExtraction(frame).strip()
-            #     datetime_object = datetime.strptime(line_text, "%Y%m%d%H%M%S")
-            #     with app.app_context():
-            #         # db.create_all()
-            #         new_detection = ObjectDetection(predicted_class=object_class_name[1], timestamp=datetime_object, additional_info=object_class_name[0], camera_id=camera_id)
-            #         db.session.add(new_detection)
-            #         db.session.commit()
-        
-
-
-
     except KeyboardInterrupt:
         print("KeyboardInterrupt: Stopping video stream.")
     finally:
