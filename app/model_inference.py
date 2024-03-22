@@ -20,10 +20,9 @@ import uuid
 import requests
 import re
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
-line_points=[(10, 400), (2000, 550)]
-ml_model = YOLOModel()
-counter = CounterApplication(ml_model, line_points)
+# pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
+# line_points=[(10, 400), (2000, 550)]
+
 
 def timestampExtraction(frame):
     image = frame[35:89, 1431:1855]
@@ -34,7 +33,7 @@ def timestampExtraction(frame):
     text = pytesseract.image_to_string(pil_image, config=r'--psm 7 --oem 3 -l eng -c tessedit_char_whitelist=0123456789')
     return text
 
-def consume_kafka_stream():
+def consume_kafka_stream(camera_id, region_points, line_points, emails):
     # Set your Kafka broker address
     bootstrap_servers = 'localhost:9092'
     topic = 'videostreaming'
@@ -63,7 +62,7 @@ def consume_kafka_stream():
                 save_path = os.path.join(os.path.dirname(__file__),'static', 'camera','intrusions', f'{unique_filename}.jpg')
                 cv2.imwrite(save_path, intrusion_frame)
                 data = {
-                    "recipients": ["adityaagr012@gmail.com", "prasannapm416@gmail.com"],
+                    "recipients": emails,
                     "subject": "Instrusion detected",
                     "msg_body": "An intrusion has been detected in your defined region!",
                     "image": save_path
@@ -93,4 +92,6 @@ if __name__ == "__main__":
     region_points = eval(args.region_points)
     line_points = eval(args.line_points)
     emails = ast.literal_eval(args.recipients)
-    consume_kafka_stream()
+
+    print("Line points", line_points)
+    consume_kafka_stream(camera_id, region_points, line_points, emails)

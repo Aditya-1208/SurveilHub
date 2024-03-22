@@ -16,7 +16,7 @@ import subprocess
 from PIL import Image
 import pytesseract
 import cv2
-import os
+import ast
 
 camera_processes = {}
 line_points=[]
@@ -58,25 +58,36 @@ def create_app(config_class=Config):
     def create_camera_page():
         return render_template('create_camera.html')
     
-    def start_streaming(url):
+    def start_streaming(url = "http://localhost:9000/"):
     # Path to Python executable in the virtual environment
         current_dir = os.path.dirname(os.path.realpath(__file__))
         venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
         python_exe = os.path.join(venv_path, 'python.exe')
         producer_path = os.path.join(current_dir, 'producer.py')
-        url = "http://localhost:9000/"
         cmd = [python_exe, producer_path, '--url', url] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
-    def run_model_inference():
+    def run_model_inference(camera_id):
         current_dir = os.path.dirname(os.path.realpath(__file__))
         venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
         python_exe = os.path.join(venv_path, 'python.exe')
         inference_path = os.path.join(current_dir,'model_inference.py',)
-        camera_id = 123
-        region_points = [[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
-        line_points = [(10, 700), (2000, 1100)]
-        recipients = ['adityaagr012@gmail.com', 'prasannapm416@gmail.com']
+        camera = Camera.query.get_or_404(camera_id)
+        print("Regions : ",camera.get_regions_innermost_tuple_string())
+        all_points_array = ast.literal_eval(camera.get_regions_innermost_tuple_string())
+        line_points_arrays = []
+        for sub_array in all_points_array:
+            if len(sub_array) == 2:
+                line_points_arrays.append(sub_array)
+
+        for line_points_array in line_points_arrays:
+            all_points_array.remove(line_points_array)
+            
+        # region_points = [[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
+        region_points = all_points_array
+        line_points = line_points_arrays[0]
+        # line_points = [(10, 700), (2000, 1100)]
+        recipients = camera.get_alert_emails()
         cmd = [python_exe, inference_path, '--camera_id', str(camera_id), '--region_points', str(region_points), '--line_points', str(line_points), '--recipients', str(recipients)] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
@@ -234,7 +245,7 @@ def create_app(config_class=Config):
         camera = Camera.query.get_or_404(camera_id)
         if camera.id not in camera_processes:
             streaming_process = start_streaming(camera.connection_url)
-            inference_process = run_model_inference()
+            inference_process = run_model_inference(camera_id)
             camera_processes[camera.id] = (streaming_process,inference_process)
             camera.state = True
             db.session.commit()
