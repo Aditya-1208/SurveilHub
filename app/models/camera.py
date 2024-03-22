@@ -21,6 +21,30 @@ class Camera(db.Model):
     def set_regions(self, points):
         self.regions = "[]" if not points else json.dumps(points)
 
+    def get_regions_innermost_tuple_string(self):
+        if self.regions:
+            regions_string = json.loads(self.regions)
+            depth = 0
+            result = ""
+            for char in regions_string:
+                if char == '[':
+                    depth += 1
+                    if depth == 3:  # Check if it's the innermost '['
+                        result += '('
+                    else:
+                        result += char
+                elif char == ']':
+                    if depth == 3:  # Check if it's the innermost ']'
+                        result += ')'
+                    else:
+                        result += char
+                    depth -= 1
+                else:
+                    result += char
+            return result
+        else:
+            return "[]"
+
     def get_regions(self):
         return json.loads(self.regions) if self.regions else []
 
@@ -32,6 +56,9 @@ class Camera(db.Model):
 
     def get_alert_emails(self):
         return [element.strip() for element in self.alert_emails.split(',')] if self.alert_emails else []
+
+    def get_alert_emails_string(self):
+        return f"{self.get_alert_emails()}"
 
     def capture_frame(self):
         # Open connection to camera
