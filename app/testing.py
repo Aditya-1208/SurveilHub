@@ -5,7 +5,10 @@ import os
 import threading
 import numpy as np
 import argparse
+import json
 import queue
+import sys
+import ast
 from datetime import datetime
 from dotenv import load_dotenv
 load_dotenv('.env')
@@ -19,8 +22,8 @@ import re
 FRAME_WIDTH = 400
 FRAME_QUEUE_SIZE = 30
 frame_queue = queue.Queue(maxsize=FRAME_QUEUE_SIZE)
-region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
-line_points = [(10, 700), (2000, 1100)]
+# region_points=[[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
+# line_points = [(10, 700), (2000, 1100)]
 pytesseract.pytesseract.tesseract_cmd = r'C:\Users\Prasanna P M\AppData\Local\Programs\Tesseract-OCR\tesseract.exe'
 
 
@@ -78,10 +81,16 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Process video stream with object detection.')
     parser.add_argument('--camera_id', type=int, help='Camera ID', required=True)
+    parser.add_argument('--region_points', type=str, help='Region points as a list of tuples', required=True)
+    parser.add_argument('--line_points', type=str, help='Line points as a tuple', required=True)
+    parser.add_argument('--recipients', type=str, help='Array of recipient email addresses as a JSON-formatted string', required=True)
     args = parser.parse_args()
+
     camera_id = args.camera_id
+    region_points = eval(args.region_points)
+    line_points = eval(args.line_points)
+    emails = ast.literal_eval(args.recipients)
+
 
     # Start the video stream processing in the main thread
     video_stream_gen("http://localhost:9000/", camera_id)
-
-
