@@ -64,9 +64,7 @@ def create_app(config_class=Config):
         venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
         python_exe = os.path.join(venv_path, 'python.exe')
         producer_path = os.path.join(current_dir, 'producer.py')
-        consumer_path = os.path.join(current_dir, 'consumer.py')
-
-        # Start streaming subprocess for the given URL
+        url = "http://localhost:9000/"
         cmd = [python_exe, producer_path, '--url', url] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
@@ -75,7 +73,11 @@ def create_app(config_class=Config):
         venv_path = os.path.abspath(os.path.join(current_dir, '..', '.venv', 'Scripts'))
         python_exe = os.path.join(venv_path, 'python.exe')
         inference_path = os.path.join(current_dir,'model_inference.py',)
-        cmd = [python_exe, inference_path] # Modify the command to include the URL parameter
+        camera_id = 123
+        region_points = [[(680, 257), (986, 125), (1174, 189), (930, 290)], [(602, 530), (450, 434), (626, 308), (1106, 415)]]
+        line_points = [(10, 700), (2000, 1100)]
+        recipients = ['adityaagr012@gmail.com', 'prasannapm416@gmail.com']
+        cmd = [python_exe, inference_path, '--camera_id', str(camera_id), '--region_points', str(region_points), '--line_points', str(line_points), '--recipients', str(recipients)] # Modify the command to include the URL parameter
         return subprocess.Popen(cmd)
     
     @app.route('/create-camera', methods=['POST'])
