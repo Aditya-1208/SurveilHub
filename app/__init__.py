@@ -262,6 +262,26 @@ def create_app(config_class=Config):
             return render_template('sending_email.html')
     
 
+    @app.route('/camera/<int:camera_id>/object_detection', methods=['POST'])
+    def store_object_detection(camera_id):
+        data = request.json
+        predicted_class = data.get('predicted_class')
+        timestamp_str = data.get('timestamp')
+        additional_info = data.get('additional_info')
+
+        detection = ObjectDetection(
+            camera_id=camera_id,
+            predicted_class=predicted_class,
+            timestamp=timestamp,
+            additional_info=additional_info
+        )
+
+        # Add and commit to database
+        db.session.add(detection)
+        db.session.commit()
+
+        return jsonify({'message': 'Object detection record stored successfully'}), 201
+
     @app.route('/index')
     def index():
         return render_template('index.html')
